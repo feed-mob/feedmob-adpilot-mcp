@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { FastMCP } from 'fastmcp';
 import { greetingTool } from './tools/greeting.js';
 import { buttonTool } from './tools/button.js';

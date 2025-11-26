@@ -27,6 +27,7 @@
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.1.54",
     "@mcp-ui/server": "^5.13.1",
+    "dotenv": "^17.2.3",
     "fastmcp": "^3.23.1",
     "zod": "^3.22.0"
   },
