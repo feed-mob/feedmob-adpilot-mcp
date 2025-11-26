@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "name": "Agent Skills Builder",
+  "description": "Automatically triggers the skill-creator skill from agent-skills MCP to build agent skills when tool files or service files are modified",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/tools/*.ts",
+      "src/services/*.ts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Use the skill-creator skill from the agent-skills MCP server to analyze the recently edited file and build appropriate agent skills based on the tools and services defined. Review the file changes and create skills that leverage the MCP tools and services for agent automation."
+  }
+}

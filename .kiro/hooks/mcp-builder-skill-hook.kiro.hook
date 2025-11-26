@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "MCP Builder Skill Hook",
+  "description": "Automatically triggers the mcp-builder skill from the agent-skills MCP server to help build and scaffold MCP server components when MCP-related files are edited",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/index.ts",
+      "src/tools/*.ts",
+      "package.json",
+      "tsconfig.json"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Use the mcp-builder skill from the agent-skills MCP server to analyze the changes and help build or improve the MCP server implementation. Review the edited file and suggest improvements, scaffolding, or additional components that should be added."
+  }
+}
