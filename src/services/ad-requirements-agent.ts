@@ -21,32 +21,24 @@ export class AdRequirementsAgent {
    */
   async parseRequirements(requestText: string): Promise<ValidationResult> {
     try {
-      // Try to use plugin if available, otherwise fall back to embedded instructions
-      let pluginPath: string | null = null;
-      try {
-        pluginPath = this.resolvePluginPath();
-      } catch (e) {
-        console.warn('Plugin not found, using embedded instructions:', e instanceof Error ? e.message : e);
-      }
-
-      const prompt = pluginPath
-        ? `Use the "parse-ad-requirements" skill to extract structured advertising campaign parameters from the following request:
+      const pluginPath = this.resolvePluginPath();
+      
+      const prompt = `Use the "parse-ad-requirements" skill to extract structured advertising campaign parameters from the following request:
 
 "${requestText}"
 
-Return a JSON object with the extracted parameters, missing fields, and suggestions.`
-        : this.buildEmbeddedPrompt(requestText);
+Return a JSON object with the extracted parameters, missing fields, and suggestions.`;
 
       const assistantSnippets: string[] = [];
       let resultMessage: SDKResultMessage | undefined;
 
-      // Run the agent
+      // Run the agent with plugin
       for await (const message of query({
         prompt,
         options: {
-          plugins: pluginPath ? [{ type: 'local', path: pluginPath }] : undefined,
-          allowedTools: pluginPath ? ['Skill', 'Read'] : ['Read'],
-          maxTurns: pluginPath ? 10 : 3,
+          plugins: [{ type: 'local', path: pluginPath }],
+          allowedTools: ['Skill', 'Read'],
+          maxTurns: 10,
         }
       })) {
         if (message.type === 'assistant') {
@@ -122,59 +114,6 @@ Return a JSON object with the extracted parameters, missing fields, and suggesti
     }
 
     return textParts.join('\n').trim();
-  }
-
-  /**
-   * Build embedded prompt with skill instructions when plugin is not available
-   */
-  private buildEmbeddedPrompt(requestText: string): string {
-    const skillInstructions = `You are an advertising campaign requirements parser. Extract structured parameters from campaign descriptions.
-
-Extract these 12 fields:
-1. product_or_service: The product, service, or brand
-2. product_or_service_url: Website or landing page URL
-3. campaign_name: Descriptive name for the campaign
-4. target_audience: Demographics, interests, or characteristics
-5. geography: Geographic targeting
-6. ad_format: Type of ad creative (video, carousel, static image, etc.)
-7. budget: Campaign budget with currency
-8. platform: Advertising platform (TikTok, Facebook, Instagram, etc.)
-9. kpi: Key performance indicators or success metrics
-10. time_period: Campaign duration or timeline
-11. creative_direction: Style, tone, or creative requirements
-12. other_details: Additional requirements or context
-
-Return ONLY a JSON object in this exact format (no markdown, no explanations):
-{
-  "success": true/false,
-  "parameters": {
-    "product_or_service": "value or null",
-    "product_or_service_url": "value or null",
-    "campaign_name": "value or null",
-    "target_audience": "value or null",
-    "geography": "value or null",
-    "ad_format": "value or null",
-    "budget": "value or null",
-    "platform": "value or null",
-    "kpi": "value or null",
-    "time_period": "value or null",
-    "creative_direction": "value or null",
-    "other_details": "value or null"
-  },
-  "missingFields": ["field1", "field2"],
-  "suggestions": {
-    "field1": "helpful suggestion",
-    "field2": "helpful suggestion"
-  }
-}
-
-Rules:
-- Use null for missing fields
-- Set success to true only if ALL fields are populated
-- List all missing field names in missingFields array
-- Provide helpful suggestions for missing fields`;
-
-    return `${skillInstructions}\n\nCampaign request: "${requestText}"`;
   }
 
   /**
