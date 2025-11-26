@@ -20,7 +20,7 @@ const FIELD_LABELS: Record<keyof CampaignParameters, string> = {
 };
 
 /**
- * Creates a UIResource displaying campaign parameters
+ * Creates a UIResource displaying campaign parameters with editable fields for missing info
  */
 export function createParametersUI(result: ValidationResult) {
   const { parameters } = result;
@@ -34,12 +34,30 @@ export function createParametersUI(result: ValidationResult) {
     .map(([key, value]) => {
       const isMissing = missingFields.includes(key);
       const label = FIELD_LABELS[key as keyof CampaignParameters] || key;
-      const displayValue = value || '<em>Not specified</em>';
+      const displayValue = value || '';
       
+      // If field is missing, render an editable input
+      if (isMissing) {
+        return `
+          <div class="param-card missing-field">
+            <label class="param-label" for="field-${key}">${label}</label>
+            <input 
+              type="text" 
+              id="field-${key}" 
+              name="${key}"
+              class="param-input"
+              placeholder="Enter ${label.toLowerCase()}..."
+              value="${displayValue}"
+            />
+          </div>
+        `;
+      }
+      
+      // Otherwise, render as read-only
       return `
-        <div class="param-card ${isMissing ? 'missing-field' : ''}">
+        <div class="param-card">
           <div class="param-label">${label}</div>
-          <div class="param-value">${displayValue}</div>
+          <div class="param-value">${displayValue || '<em>Not specified</em>'}</div>
         </div>
       `;
     })
@@ -53,6 +71,9 @@ export function createParametersUI(result: ValidationResult) {
     <div class="missing-notice">
       <strong>Missing Information:</strong> ${missingFields.length} field(s) need to be specified
     </div>
+    <button class="submit-button" onclick="handleSubmit()">
+      Submit Additional Information
+    </button>
   `;
 
   const htmlContent = `
@@ -68,6 +89,7 @@ export function createParametersUI(result: ValidationResult) {
         --accent-blue: #0078ff;
         --accent-orange: #ff9500;
         --accent-green: #0d9b45;
+        --accent-red: #ff3b30;
       }
       @media (prefers-color-scheme: dark) {
         :root {
@@ -134,7 +156,25 @@ export function createParametersUI(result: ValidationResult) {
         color: var(--text-tertiary);
         font-style: italic;
       }
-      .confirm-button {
+      .param-input {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border: 2px solid var(--accent-orange);
+        border-radius: 6px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        box-sizing: border-box;
+        transition: border-color 0.2s;
+      }
+      .param-input:focus {
+        outline: none;
+        border-color: var(--accent-blue);
+      }
+      .param-input::placeholder {
+        color: var(--text-tertiary);
+      }
+      .confirm-button, .submit-button {
         background: var(--accent-green);
         color: white;
         border: none;
@@ -146,12 +186,24 @@ export function createParametersUI(result: ValidationResult) {
         transition: transform 0.2s, box-shadow 0.2s;
         width: 100%;
       }
-      .confirm-button:hover {
+      .submit-button {
+        background: var(--accent-blue);
+        margin-top: 15px;
+      }
+      .confirm-button:hover, .submit-button:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(13, 155, 69, 0.3);
       }
-      .confirm-button:active {
+      .submit-button:hover {
+        box-shadow: 0 4px 12px rgba(0, 120, 255, 0.3);
+      }
+      .confirm-button:active, .submit-button:active {
         transform: translateY(0);
+      }
+      .submit-button:disabled {
+        background: var(--text-tertiary);
+        cursor: not-allowed;
+        transform: none;
       }
       .missing-notice {
         background: var(--bg-tertiary);
@@ -159,6 +211,7 @@ export function createParametersUI(result: ValidationResult) {
         border-radius: 8px;
         border-left: 4px solid var(--accent-orange);
         color: var(--text-primary);
+        margin-bottom: 15px;
       }
     </style>
     <div class="parameters-container">
@@ -178,6 +231,52 @@ export function createParametersUI(result: ValidationResult) {
           payload: {
             toolName: 'confirmCampaignParameters',
             params: ${JSON.stringify(parameters)}
+          }
+        }, '*');
+      }
+
+      function handleSubmit() {
+        // Collect all input values
+        const inputs = document.querySelectorAll('.param-input');
+        const updatedFields = {};
+        let hasEmptyFields = false;
+
+        inputs.forEach(input => {
+          const fieldName = input.name;
+          const fieldValue = input.value.trim();
+          
+          if (fieldValue === '') {
+            hasEmptyFields = true;
+            input.style.borderColor = 'var(--accent-red, #ff3b30)';
+          } else {
+            input.style.borderColor = 'var(--accent-orange)';
+            updatedFields[fieldName] = fieldValue;
+          }
+        });
+
+        if (hasEmptyFields) {
+          alert('Please fill in all highlighted fields before submitting.');
+          return;
+        }
+
+        // Merge with existing parameters
+        const allParameters = ${JSON.stringify(parameters)};
+        Object.assign(allParameters, updatedFields);
+
+        // Build a natural language request text from the updated fields
+        const fieldDescriptions = Object.entries(updatedFields).map(([key, value]) => {
+          const label = ${JSON.stringify(FIELD_LABELS)}[key] || key;
+          return \`\${label}: \${value}\`;
+        }).join(', ');
+
+        const requestText = \`Updated campaign information: \${fieldDescriptions}\`;
+
+        // Call parseAdRequirements tool again with updated information
+        window.parent.postMessage({
+          type: 'tool',
+          payload: {
+            toolName: 'parseAdRequirements',
+            params: { requestText }
           }
         }, '*');
       }
