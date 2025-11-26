@@ -181,26 +181,20 @@ Rules:
    * Resolve the path to the parse-ad-requirements plugin
    */
   private resolvePluginPath(): string {
-    // Try manual path from environment first
-    const manualPath = process.env.PARSE_AD_REQUIREMENTS_PLUGIN_PATH?.trim();
+    // Primary path: src/plugins/parse-ad-requirements
+    const pluginPath = resolve(__dirname, '..', 'plugins', 'parse-ad-requirements');
     
-    const candidatePaths = [
-      manualPath ? resolve(manualPath) : undefined,
-      resolve(__dirname, '..', '..', 'plugins', 'parse-ad-requirements'),
-      resolve(process.cwd(), 'plugins', 'parse-ad-requirements'),
-    ].filter((candidate): candidate is string => Boolean(candidate));
-
-    for (const candidate of candidatePaths) {
-      if (existsSync(candidate)) {
-        const manifestPath = resolve(candidate, '.claude-plugin', 'plugin.json');
-        if (existsSync(manifestPath)) {
-          return candidate;
-        }
+    // Check if plugin exists with valid manifest
+    if (existsSync(pluginPath)) {
+      const manifestPath = resolve(pluginPath, 'skills', 'parse-ad-requirements', 'SKILL.md');
+      if (existsSync(manifestPath)) {
+        console.log(`✅ Found parse-ad-requirements plugin at: ${pluginPath}`);
+        return pluginPath;
       }
     }
 
     throw new Error(
-      'parse-ad-requirements plugin not found. Ensure the plugin exists at plugins/parse-ad-requirements with .claude-plugin/plugin.json or set PARSE_AD_REQUIREMENTS_PLUGIN_PATH.'
+      `parse-ad-requirements plugin not found at expected location: ${pluginPath}. Expected structure: src/plugins/parse-ad-requirements/skills/parse-ad-requirements/SKILL.md`
     );
   }
 }
