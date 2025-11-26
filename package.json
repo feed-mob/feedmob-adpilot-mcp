@@ -1,0 +1,42 @@
+{
+  "name": "feedmob-adpilot-mcp",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "FeedMob AdPilot MCP - Conversational advertising assistant",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:reset": "tsx src/db/reset.ts",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "mcp:dev": "npx fastmcp dev src/index.ts",
+    "mcp:inspect": "npx fastmcp inspect src/index.ts"
+  },
+  "keywords": ["mcp", "advertising", "ai", "fastmcp"],
+  "author": "FeedMob",
+  "license": "MIT",
+  "dependencies": {
+    "fastmcp": "^3.23.1",
+    "@mcp-ui/server": "^5.13.1",
+    "@anthropic-ai/sdk": "^0.71.0",
+    "pg": "^8.11.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/pg": "^8.11.0",
+    "typescript": "^5.3.0",
+    "tsx": "^4.7.0",
+    "vitest": "^1.2.0",
+    "@vitest/coverage-v8": "^1.2.0",
+    "fast-check": "^3.15.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.2.0"
+  }
+}
