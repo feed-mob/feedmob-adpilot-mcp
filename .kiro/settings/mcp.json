@@ -41,6 +41,13 @@
       "autoApprove": [
         "fetch_mcp_ui_documentation"
       ]
+    },
+   "agent-skills": {
+      "command": "uvx",
+      "args": ["agent-skills-mcp"],
+      "env": {
+        "SKILL_FOLDER": "./.kiro/settings/skills"
+      }
     }
   }
 }
