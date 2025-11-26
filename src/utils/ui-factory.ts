@@ -6,12 +6,33 @@ import { createUIResource } from '@mcp-ui/server';
 export function createGreetingUI(name: string) {
   const htmlContent = `
     <style>
+      :root {
+        --bg-primary: #f5f5f5;
+        --bg-secondary: #ededed;
+        --bg-tertiary: #e6e6e6;
+        --text-primary: #111;
+        --text-secondary: #444;
+        --text-tertiary: #666;
+        --icon-primary: #111;
+        --accent-blue: #0078ff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-primary: #0f0f10;
+          --bg-secondary: #1a1b1d;
+          --bg-tertiary: #242529;
+          --text-primary: #f5f5f5;
+          --text-secondary: #c8c8cc;
+          --text-tertiary: #9a9aa0;
+          --icon-primary: #f5f5f5;
+        }
+      }
       .greeting-container {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         padding: 30px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: var(--bg-secondary);
         border-radius: 12px;
-        color: white;
+        color: var(--text-primary);
         max-width: 500px;
         margin: 0 auto;
       }
@@ -19,15 +40,16 @@ export function createGreetingUI(name: string) {
         font-size: 32px;
         font-weight: bold;
         margin-bottom: 10px;
+        color: var(--text-primary);
       }
       .greeting-message {
         font-size: 18px;
         margin-bottom: 20px;
-        opacity: 0.9;
+        color: var(--text-secondary);
       }
       .greeting-button {
-        background: white;
-        color: #667eea;
+        background: var(--accent-blue);
+        color: white;
         border: none;
         padding: 12px 24px;
         border-radius: 8px;
@@ -38,7 +60,7 @@ export function createGreetingUI(name: string) {
       }
       .greeting-button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 120, 255, 0.3);
       }
       .greeting-button:active {
         transform: translateY(0);
@@ -89,11 +111,32 @@ export function createButtonResponseUI(action: string, source?: string) {
   
   const htmlContent = `
     <style>
+      :root {
+        --bg-primary: #f5f5f5;
+        --bg-secondary: #ededed;
+        --bg-tertiary: #e6e6e6;
+        --text-primary: #111;
+        --text-secondary: #444;
+        --text-tertiary: #666;
+        --icon-primary: #111;
+        --accent-green: #0d9b45;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-primary: #0f0f10;
+          --bg-secondary: #1a1b1d;
+          --bg-tertiary: #242529;
+          --text-primary: #f5f5f5;
+          --text-secondary: #c8c8cc;
+          --text-tertiary: #9a9aa0;
+          --icon-primary: #f5f5f5;
+        }
+      }
       .button-response-container {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         padding: 25px;
-        background: #f0f9ff;
-        border: 2px solid #0ea5e9;
+        background: var(--bg-secondary);
+        border: 2px solid var(--accent-green);
         border-radius: 10px;
         max-width: 500px;
         margin: 0 auto;
@@ -106,25 +149,25 @@ export function createButtonResponseUI(action: string, source?: string) {
       .response-title {
         font-size: 24px;
         font-weight: bold;
-        color: #0c4a6e;
+        color: var(--text-primary);
         text-align: center;
         margin-bottom: 15px;
       }
       .response-details {
-        background: white;
+        background: var(--bg-tertiary);
         padding: 15px;
         border-radius: 8px;
         margin-bottom: 10px;
       }
       .response-label {
         font-weight: 600;
-        color: #0369a1;
+        color: var(--text-primary);
         margin-bottom: 5px;
       }
       .response-value {
-        color: #334155;
+        color: var(--text-secondary);
         font-family: 'Courier New', monospace;
-        background: #f1f5f9;
+        background: var(--bg-primary);
         padding: 8px;
         border-radius: 4px;
         word-break: break-all;
@@ -170,26 +213,48 @@ export function createButtonResponseUI(action: string, source?: string) {
 export function createCounterUI(count: number) {
   const htmlContent = `
     <style>
+      :root {
+        --bg-primary: #f5f5f5;
+        --bg-secondary: #ededed;
+        --bg-tertiary: #e6e6e6;
+        --text-primary: #111;
+        --text-secondary: #444;
+        --text-tertiary: #666;
+        --icon-primary: #111;
+        --accent-blue: #0078ff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-primary: #0f0f10;
+          --bg-secondary: #1a1b1d;
+          --bg-tertiary: #242529;
+          --text-primary: #f5f5f5;
+          --text-secondary: #c8c8cc;
+          --text-tertiary: #9a9aa0;
+          --icon-primary: #f5f5f5;
+        }
+      }
       .counter-container {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         padding: 30px;
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        background: var(--bg-secondary);
         border-radius: 12px;
         max-width: 400px;
         margin: 0 auto;
         text-align: center;
-        color: white;
+        color: var(--text-primary);
       }
       .counter-title {
         font-size: 24px;
         font-weight: bold;
         margin-bottom: 20px;
+        color: var(--text-primary);
       }
       .counter-display {
         font-size: 72px;
         font-weight: bold;
         margin: 30px 0;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        color: var(--text-primary);
       }
       .counter-buttons {
         display: flex;
@@ -197,8 +262,8 @@ export function createCounterUI(count: number) {
         justify-content: center;
       }
       .counter-button {
-        background: white;
-        color: #f5576c;
+        background: var(--accent-blue);
+        color: white;
         border: none;
         padding: 15px 30px;
         border-radius: 8px;
@@ -210,7 +275,7 @@ export function createCounterUI(count: number) {
       }
       .counter-button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 120, 255, 0.3);
       }
       .counter-button:active {
         transform: translateY(0);
