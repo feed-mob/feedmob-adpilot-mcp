@@ -13,7 +13,7 @@
       "description": "Extract structured advertising campaign parameters from natural language input",
       "author": "FeedMob",
       "skills": [
-        "./skills/SKILL.md"
+        "./skills/parse-ad-requirements/SKILL.md"
       ]
     }
   ]
