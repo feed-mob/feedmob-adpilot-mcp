@@ -1,0 +1,18 @@
+{
+  "enabled": true,
+  "name": "MCP-UI Docs Checker",
+  "description": "Automatically calls mcp-ui-docs tool and context7 to retrieve the latest documentation whenever mcp-ui related files are edited or created, ensuring code changes are based on current documentation",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "*mcp-ui*",
+      "*mcp_ui*",
+      "*mcpui*"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Before proceeding with any code changes to mcp-ui, please call the mcp-ui-docs tool and context7 to fetch the most up-to-date documentation. Review the documentation to ensure your changes align with the current specifications and best practices."
+  }
+}

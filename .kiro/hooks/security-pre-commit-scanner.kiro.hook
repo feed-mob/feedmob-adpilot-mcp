@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Security Pre-Commit Scanner",
+  "description": "Scans files for potential security issues like API keys, tokens, credentials, and other sensitive data before they're committed to version control",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "**/*"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Review the changed files for potential security issues:\n\n1. Look for API keys, tokens, or credentials in source code\n2. Check for private keys or sensitive credentials (e.g., BEGIN PRIVATE KEY, BEGIN RSA PRIVATE KEY)\n3. Scan for encryption keys or certificates\n4. Identify authentication tokens or session IDs\n5. Flag passwords or secrets in configuration files\n6. Detect IP addresses that may contain sensitive data\n7. Find hardcoded internal URLs\n8. Spot database connection credentials (connection strings, usernames, passwords)\n\nFor each security issue found:\n1. Highlight the specific security risk and its location\n2. Suggest a secure alternative approach (e.g., environment variables, secret management systems)\n3. Recommend security best practices\n\nIf no issues are found, briefly confirm the files are clear of obvious security risks."
+  }
+}
