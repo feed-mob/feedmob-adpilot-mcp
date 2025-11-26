@@ -25,11 +25,32 @@ FeedMob AdPilot is an MCP (Model Context Protocol) server that:
 ## Prerequisites
 
 - Node.js 20+
-- PostgreSQL 14+
+- Docker and Docker Compose (for local database)
+- OR PostgreSQL 14+ (if not using Docker)
+- [just](https://github.com/casey/just) command runner (optional but recommended)
 - Google OAuth credentials
 - Anthropic API key
 
-## Installation
+## Quick Start
+
+### Using just (Recommended)
+
+```bash
+# Install dependencies
+just install
+
+# Setup development environment (starts database + runs migrations)
+just setup
+
+# Copy and configure environment variables
+cp .env.example .env
+# Edit .env with your API keys
+
+# Start development server
+just dev
+```
+
+### Manual Installation
 
 1. Clone the repository:
 ```bash
@@ -49,6 +70,20 @@ cp .env.example .env
 ```
 
 4. Set up the database:
+
+**Option A: Using Docker (Recommended for development)**
+```bash
+# Start PostgreSQL in Docker
+docker-compose up -d
+
+# Wait for database to be ready (check with)
+docker-compose ps
+
+# Run migrations
+npm run db:migrate
+```
+
+**Option B: Using local PostgreSQL**
 ```bash
 # Create the database
 createdb feedmob_adpilot
@@ -79,40 +114,72 @@ See `.env.example` for all required environment variables:
 5. Add authorized redirect URI: `http://localhost:8080/auth/google/callback`
 6. Copy client ID and secret to `.env`
 
-## Development
+## Development Commands
 
-### Running the Server
+### Using just
 
 ```bash
-# Development mode with auto-reload
-npm run dev
+# View all available commands
+just
 
-# Production mode
-npm run build
-npm start
+# Database commands
+just db-start          # Start PostgreSQL database
+just db-stop           # Stop database
+just db-clean          # Stop and remove all data
+just db-logs           # View database logs
+just db-shell          # Access PostgreSQL CLI
+just db-migrate        # Run migrations
+just db-reset          # Reset database
+just db-info           # Show connection info
+
+# Development commands
+just dev               # Start development server
+just build             # Build for production
+just start             # Start production server
+
+# Testing commands
+just test              # Run all tests
+just test-watch        # Run tests in watch mode
+just test-coverage     # Run tests with coverage
+just mcp-dev           # Test with FastMCP CLI
+just mcp-inspect       # Test with MCP Inspector
+
+# Utility commands
+just setup             # Setup dev environment
+just start-dev         # Full workflow (setup + dev)
+just stop              # Stop everything
+just clean-all         # Clean everything
+just verify            # Verify setup
+just typecheck         # Check TypeScript types
+just lint              # Lint code
+just format            # Format code
 ```
 
-### Testing with FastMCP CLI
+### Using npm/docker-compose directly
 
 ```bash
-# Interactive testing
-npm run mcp:dev
+# Database management
+docker-compose up -d                    # Start database
+docker-compose down                     # Stop database
+docker-compose down -v                  # Stop and remove data
+docker-compose logs -f postgres         # View logs
+docker-compose exec postgres psql -U feedmob -d feedmob_adpilot  # CLI
 
-# Visual debugging with MCP Inspector
-npm run mcp:inspect
-```
+# Development
+npm run dev                             # Start dev server
+npm run build                           # Build for production
+npm start                               # Start production server
 
-### Running Tests
+# Testing
+npm test                                # Run all tests
+npm run test:coverage                   # Run with coverage
+npm run test:watch                      # Watch mode
+npm run mcp:dev                         # FastMCP CLI
+npm run mcp:inspect                     # MCP Inspector
 
-```bash
-# Run all tests
-npm test
-
-# Run with coverage
-npm run test:coverage
-
-# Watch mode
-npm run test:watch
+# Database migrations
+npm run db:migrate                      # Run migrations
+npm run db:reset                        # Reset database
 ```
 
 ## Project Structure

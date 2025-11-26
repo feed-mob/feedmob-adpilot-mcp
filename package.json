@@ -13,8 +13,11 @@
     "test:coverage": "vitest --coverage",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:reset": "tsx src/db/reset.ts",
+    "db:start": "docker-compose up -d",
+    "db:stop": "docker-compose down",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
+    "typecheck": "tsc --noEmit",
     "mcp:dev": "npx fastmcp dev src/index.ts",
     "mcp:inspect": "npx fastmcp inspect src/index.ts"
   },
