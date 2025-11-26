@@ -24,6 +24,22 @@ plugins/parse-ad-requirements/
 
 ## Configuration
 
+### Environment Variables Setup
+
+The project uses `dotenv` to load environment variables from a `.env` file:
+
+1. Copy the example file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit `.env` and add your API key:
+   ```bash
+   ANTHROPIC_API_KEY=sk-ant-api03-your-actual-key-here
+   ```
+
+3. The `.env` file is automatically loaded when the server starts
+
 ### Plugin Path Resolution
 
 The agent tries these paths in order:
