@@ -1,7 +1,12 @@
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
 import { existsSync } from 'fs';
+import { fileURLToPath } from 'url';
 import { query, type SDKMessage, type SDKResultMessage } from '@anthropic-ai/claude-agent-sdk';
 import { ValidationResult, ValidationResultSchema } from '../schemas/campaign-params.js';
+
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /**
  * Service for interacting with Claude Agent SDK to parse advertising requirements
