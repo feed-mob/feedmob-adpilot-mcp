@@ -1,0 +1,20 @@
+{
+  "name": "feedmob-claude-plugins",
+  "owner": {
+    "name": "FeedMob Inc.",
+    "email": "dev@feedmob.com",
+    "url": "https://feedmob.com"
+  },
+  "plugins": [
+    {
+      "name": "parse-ad-requirements",
+      "source": "./parse-ad-requirements",
+      "version": "1.0.0",
+      "description": "Extract structured advertising campaign parameters from natural language input",
+      "author": "FeedMob",
+      "skills": [
+        "./skills/SKILL.md"
+      ]
+    }
+  ]
+}

@@ -1,7 +1,0 @@
-{
-  "name": "parse-ad-requirements",
-  "version": "1.0.0",
-  "description": "Extract structured advertising campaign parameters from natural language input",
-  "author": "FeedMob AdPilot",
-  "skills": "skills"
-}
