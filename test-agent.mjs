@@ -11,13 +11,14 @@ console.log('Plugin exists:', await import('fs').then(m => m.promises.access(plu
 console.log('');
 
 try {
-  const prompt = 'Hello, can you see the parse-ad-requirements skill?';
+  const prompt = 'Use the parse-ad-requirements skill to parse this: I need a TikTok video ad for my fitness app';
   
   for await (const message of query({
     prompt,
     options: {
       plugins: [{ type: 'local', path: pluginPath }],
-      maxTurns: 2,
+      allowedTools: ['Skill', 'Read'],
+      maxTurns: 10,
     }
   })) {
     console.log('Message type:', message.type);
@@ -28,11 +29,14 @@ try {
     }
     
     if (message.type === 'assistant') {
-      console.log('Assistant response received');
+      console.log('Assistant message received');
     }
     
     if (message.type === 'result') {
       console.log('Result:', message.subtype);
+      if (message.subtype === 'success') {
+        console.log('Response:', message.result?.substring(0, 200));
+      }
       if (message.errors) {
         console.log('Errors:', message.errors);
       }

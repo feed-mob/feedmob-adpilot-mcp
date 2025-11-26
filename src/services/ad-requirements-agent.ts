@@ -1,3 +1,5 @@
+import { resolve } from 'path';
+import { existsSync } from 'fs';
 import { query, type SDKMessage, type SDKResultMessage } from '@anthropic-ai/claude-agent-sdk';
 import { ValidationResult, ValidationResultSchema } from '../schemas/campaign-params.js';
 
@@ -14,64 +16,32 @@ export class AdRequirementsAgent {
    */
   async parseRequirements(requestText: string): Promise<ValidationResult> {
     try {
-      // Instead of using a plugin, embed the skill instructions directly in the system prompt
-      const skillInstructions = `You are an advertising campaign requirements parser. Extract structured parameters from campaign descriptions.
+      // Try to use plugin if available, otherwise fall back to embedded instructions
+      let pluginPath: string | null = null;
+      try {
+        pluginPath = this.resolvePluginPath();
+      } catch (e) {
+        console.warn('Plugin not found, using embedded instructions:', e instanceof Error ? e.message : e);
+      }
 
-Extract these 12 fields:
-1. product_or_service: The product, service, or brand
-2. product_or_service_url: Website or landing page URL
-3. campaign_name: Descriptive name for the campaign
-4. target_audience: Demographics, interests, or characteristics
-5. geography: Geographic targeting
-6. ad_format: Type of ad creative (video, carousel, static image, etc.)
-7. budget: Campaign budget with currency
-8. platform: Advertising platform (TikTok, Facebook, Instagram, etc.)
-9. kpi: Key performance indicators or success metrics
-10. time_period: Campaign duration or timeline
-11. creative_direction: Style, tone, or creative requirements
-12. other_details: Additional requirements or context
+      const prompt = pluginPath
+        ? `Use the "parse-ad-requirements" skill to extract structured advertising campaign parameters from the following request:
 
-Return ONLY a JSON object in this exact format (no markdown, no explanations):
-{
-  "success": true/false,
-  "parameters": {
-    "product_or_service": "value or null",
-    "product_or_service_url": "value or null",
-    "campaign_name": "value or null",
-    "target_audience": "value or null",
-    "geography": "value or null",
-    "ad_format": "value or null",
-    "budget": "value or null",
-    "platform": "value or null",
-    "kpi": "value or null",
-    "time_period": "value or null",
-    "creative_direction": "value or null",
-    "other_details": "value or null"
-  },
-  "missingFields": ["field1", "field2"],
-  "suggestions": {
-    "field1": "helpful suggestion",
-    "field2": "helpful suggestion"
-  }
-}
+"${requestText}"
 
-Rules:
-- Use null for missing fields
-- Set success to true only if ALL fields are populated
-- List all missing field names in missingFields array
-- Provide helpful suggestions for missing fields`;
-
-      const prompt = `${skillInstructions}\n\nCampaign request: "${requestText}"`;
+Return a JSON object with the extracted parameters, missing fields, and suggestions.`
+        : this.buildEmbeddedPrompt(requestText);
 
       const assistantSnippets: string[] = [];
       let resultMessage: SDKResultMessage | undefined;
 
-      // Run the agent without plugins
+      // Run the agent
       for await (const message of query({
         prompt,
         options: {
-          allowedTools: ['Read'],
-          maxTurns: 3,
+          plugins: pluginPath ? [{ type: 'local', path: pluginPath }] : undefined,
+          allowedTools: pluginPath ? ['Skill', 'Read'] : ['Read'],
+          maxTurns: pluginPath ? 10 : 3,
         }
       })) {
         if (message.type === 'assistant') {
@@ -147,6 +117,86 @@ Rules:
     }
 
     return textParts.join('\n').trim();
+  }
+
+  /**
+   * Build embedded prompt with skill instructions when plugin is not available
+   */
+  private buildEmbeddedPrompt(requestText: string): string {
+    const skillInstructions = `You are an advertising campaign requirements parser. Extract structured parameters from campaign descriptions.
+
+Extract these 12 fields:
+1. product_or_service: The product, service, or brand
+2. product_or_service_url: Website or landing page URL
+3. campaign_name: Descriptive name for the campaign
+4. target_audience: Demographics, interests, or characteristics
+5. geography: Geographic targeting
+6. ad_format: Type of ad creative (video, carousel, static image, etc.)
+7. budget: Campaign budget with currency
+8. platform: Advertising platform (TikTok, Facebook, Instagram, etc.)
+9. kpi: Key performance indicators or success metrics
+10. time_period: Campaign duration or timeline
+11. creative_direction: Style, tone, or creative requirements
+12. other_details: Additional requirements or context
+
+Return ONLY a JSON object in this exact format (no markdown, no explanations):
+{
+  "success": true/false,
+  "parameters": {
+    "product_or_service": "value or null",
+    "product_or_service_url": "value or null",
+    "campaign_name": "value or null",
+    "target_audience": "value or null",
+    "geography": "value or null",
+    "ad_format": "value or null",
+    "budget": "value or null",
+    "platform": "value or null",
+    "kpi": "value or null",
+    "time_period": "value or null",
+    "creative_direction": "value or null",
+    "other_details": "value or null"
+  },
+  "missingFields": ["field1", "field2"],
+  "suggestions": {
+    "field1": "helpful suggestion",
+    "field2": "helpful suggestion"
+  }
+}
+
+Rules:
+- Use null for missing fields
+- Set success to true only if ALL fields are populated
+- List all missing field names in missingFields array
+- Provide helpful suggestions for missing fields`;
+
+    return `${skillInstructions}\n\nCampaign request: "${requestText}"`;
+  }
+
+  /**
+   * Resolve the path to the parse-ad-requirements plugin
+   */
+  private resolvePluginPath(): string {
+    // Try manual path from environment first
+    const manualPath = process.env.PARSE_AD_REQUIREMENTS_PLUGIN_PATH?.trim();
+    
+    const candidatePaths = [
+      manualPath ? resolve(manualPath) : undefined,
+      resolve(__dirname, '..', '..', 'plugins', 'parse-ad-requirements'),
+      resolve(process.cwd(), 'plugins', 'parse-ad-requirements'),
+    ].filter((candidate): candidate is string => Boolean(candidate));
+
+    for (const candidate of candidatePaths) {
+      if (existsSync(candidate)) {
+        const manifestPath = resolve(candidate, '.claude-plugin', 'plugin.json');
+        if (existsSync(manifestPath)) {
+          return candidate;
+        }
+      }
+    }
+
+    throw new Error(
+      'parse-ad-requirements plugin not found. Ensure the plugin exists at plugins/parse-ad-requirements with .claude-plugin/plugin.json or set PARSE_AD_REQUIREMENTS_PLUGIN_PATH.'
+    );
   }
 }
 
