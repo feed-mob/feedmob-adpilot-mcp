@@ -21,25 +21,37 @@
     "mcp:dev": "npx fastmcp dev src/index.ts",
     "mcp:inspect": "npx fastmcp inspect src/index.ts"
   },
-  "keywords": ["mcp", "advertising", "ai", "fastmcp"],
+  "keywords": [
+    "mcp",
+    "advertising",
+    "ai",
+    "fastmcp"
+  ],
   "author": "FeedMob",
   "license": "MIT",
   "dependencies": {
-    "fastmcp": "^3.23.1",
-    "@mcp-ui/server": "^5.13.1",
     "@anthropic-ai/sdk": "^0.71.0",
+    "@mcp-ui/server": "^5.13.1",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "fastmcp": "^3.23.1",
+    "google-auth-library": "^10.5.0",
+    "jsonwebtoken": "^9.0.2",
     "pg": "^8.11.0",
     "zod": "^3.22.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.0.0",
     "@types/pg": "^8.11.0",
-    "typescript": "^5.3.0",
-    "tsx": "^4.7.0",
-    "vitest": "^1.2.0",
     "@vitest/coverage-v8": "^1.2.0",
-    "fast-check": "^3.15.0",
     "eslint": "^8.56.0",
-    "prettier": "^3.2.0"
+    "fast-check": "^3.15.0",
+    "prettier": "^3.2.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.2.0"
   }
 }

@@ -7,7 +7,7 @@
   - Create directory structure for server, agents, tools, database, and auth modules
   - _Requirements: All_
 
-- [ ] 2. Set up database layer
+- [x] 2. Set up database layer
   - Create PostgreSQL database schema with users, campaigns, and creative_assets tables
   - Implement database connection pool and configuration
   - Create database service interface with user and campaign operations
@@ -25,7 +25,7 @@
   - **Property 28: Campaign history retrieval**
   - **Validates: Requirements 7.3**
 
-- [ ] 3. Implement Google OAuth authentication
+- [x] 3. Implement Google OAuth authentication
   - Set up Passport.js with Google OAuth strategy
   - Create authentication routes (login, callback, logout)
   - Implement user session management

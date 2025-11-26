@@ -111,8 +111,11 @@ See `.env.example` for all required environment variables:
 2. Create a new project or select existing
 3. Enable Google+ API
 4. Create OAuth 2.0 credentials
-5. Add authorized redirect URI: `http://localhost:8080/auth/google/callback`
+5. Add authorized redirect URI: `http://localhost:8081/auth/google/callback`
 6. Copy client ID and secret to `.env`
+7. Generate a JWT secret: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`
+
+For detailed authentication setup, see [Authentication Guide](docs/AUTHENTICATION.md) or [Quick Start](docs/AUTH_QUICK_START.md).
 
 ## Development Commands
 

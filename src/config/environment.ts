@@ -14,6 +14,7 @@ const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string(),
   GOOGLE_CLIENT_SECRET: z.string(),
   GOOGLE_CALLBACK_URL: z.string(),
+  JWT_SECRET: z.string().optional(),
   
   // Claude API
   ANTHROPIC_API_KEY: z.string(),
