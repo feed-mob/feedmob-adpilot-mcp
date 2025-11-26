@@ -1,45 +1,100 @@
-# MCP-UI FastMCP Demo
+# FeedMob AdPilot MCP Server
 
-A minimal demonstration project showcasing the integration of **FastMCP** and **mcp-ui**. This project provides a working MCP server with interactive UI components, demonstrating core capabilities of both frameworks.
+A Model Context Protocol (MCP) server that provides AI-powered advertising campaign tools using FastMCP and mcp-ui.
 
 ## Features
 
-- ✅ **Greeting Tool** - Personalized greeting with interactive button
-- ✅ **Button Tool** - Handle button click events from UI components
-- ✅ **Counter Tool** - Interactive counter with increment/decrement controls
-- ✅ **Type-Safe** - Zod schema validation for all tool parameters
-- ✅ **Interactive UI** - Rich UI components using mcp-ui
-- ✅ **HTTP Streaming** - Production-ready FastMCP server
+### Parse Advertising Requirements
 
-## Prerequisites
+The `parseAdRequirements` tool extracts structured campaign parameters from natural language descriptions using the Claude Agent SDK.
+
+**Example input:**
+```
+"Create a TikTok video ad for my fitness app targeting Southeast Asian women aged 25-35 with a $5,000 budget."
+```
+
+**Extracted parameters:**
+- Product/Service
+- Target Audience
+- Geography
+- Ad Format
+- Budget
+- Platform
+- KPIs
+- Time Period
+- Creative Direction
+- And more...
+
+The tool displays results in an interactive mcp-ui interface with visual distinction for missing fields.
+
+## Setup
+
+### Prerequisites
 
 - Node.js 20+
 - npm
 
-## Installation
+### Installation
 
 ```bash
 npm install
 ```
 
+### Configuration
+
+Create a `.env` file based on `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+#### Option 1: Anthropic API (Default)
+
+```env
+ANTHROPIC_API_KEY=your_api_key_here
+```
+
+Get your API key from [Anthropic Console](https://console.anthropic.com/).
+
+#### Option 2: AWS Bedrock
+
+```env
+CLAUDE_CODE_USE_BEDROCK=1
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+ANTHROPIC_MODEL=us.anthropic.claude-sonnet-4-20250514-v1:0
+```
+
 ## Development
 
-### Start Development Server
+### Run Development Server
 
 ```bash
 npm run dev
 ```
 
-The server will start on `http://localhost:8080` with the following endpoints:
-- **MCP endpoint**: `http://localhost:8080/mcp`
-- **SSE endpoint**: `http://localhost:8080/sse`
-- **Health check**: `http://localhost:8080/ready`
+The server will start on `http://localhost:8080/mcp`.
 
-### Build for Production
+### Test with MCP Inspector
 
 ```bash
-npm run build
-npm start
+npm run mcp:inspect
+```
+
+This opens a visual debugging interface where you can test tools interactively.
+
+### Run Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run with coverage
+npm run test:coverage
 ```
 
 ### Type Checking
@@ -48,212 +103,91 @@ npm start
 npm run typecheck
 ```
 
-## Testing
-
-### Run All Tests
-
-```bash
-npm test
-```
-
-### Watch Mode
-
-```bash
-npm run test:watch
-```
-
-### Coverage Report
-
-```bash
-npm run test:coverage
-```
-
-## MCP Development Tools
-
-### FastMCP CLI
-
-Test the server with the FastMCP CLI:
-
-```bash
-npm run mcp:dev
-```
-
-### MCP Inspector
-
-Visual debugging with MCP Inspector:
-
-```bash
-npm run mcp:inspect
-```
-
-This opens a web interface where you can:
-- View all available tools
-- Test tool invocations
-- See UIResource rendering in real-time
-- Debug interactive components
-
-## Available Tools
-
-### 1. greet
-
-Generate a personalized greeting with an interactive UI component.
-
-**Parameters:**
-- `name` (string, required) - Name to greet (must be non-empty)
-
-**Example:**
-```json
-{
-  "name": "Alice"
-}
-```
-
-**Returns:** UIResource with personalized greeting and clickable button
-
-### 2. button
-
-Handle button click events from UI components and return confirmation.
-
-**Parameters:**
-- `action` (string, required) - Action identifier
-- `source` (string, optional) - Source of the button click
-
-**Example:**
-```json
-{
-  "action": "greeting-button-clicked",
-  "source": "greeting-ui"
-}
-```
-
-**Returns:** UIResource with action confirmation details
-
-### 3. counter
-
-Display an interactive counter with increment and decrement buttons.
-
-**Parameters:**
-- `count` (number, required) - Current counter value
-
-**Example:**
-```json
-{
-  "count": 0
-}
-```
-
-**Returns:** UIResource with counter display and interactive buttons
-
 ## Project Structure
 
 ```
-mcp-ui-fastmcp-demo/
+.
 ├── src/
-│   ├── index.ts           # Server entry point
+│   ├── index.ts                    # FastMCP server entry point
+│   ├── schemas/
+│   │   └── campaign-params.ts      # Zod schemas for validation
+│   ├── services/
+│   │   └── ad-requirements-agent.ts # Claude Agent SDK integration
 │   ├── tools/
-│   │   ├── greeting.ts    # Greeting tool
-│   │   ├── button.ts      # Button tool
-│   │   └── counter.ts     # Counter tool
+│   │   ├── parse-ad-requirements.ts # Main parsing tool
+│   │   ├── greeting.ts             # Demo greeting tool
+│   │   ├── button.ts               # Demo button tool
+│   │   └── counter.ts              # Demo counter tool
 │   └── utils/
-│       └── ui-factory.ts  # UIResource creation utilities
+│       ├── ui-factory.ts           # Demo UI components
+│       └── ad-requirements-ui.ts   # Campaign UI components
+├── skills/
+│   └── parse-ad-requirements.md    # Agent skill instructions
 ├── tests/
-│   ├── unit/              # Unit tests
-│   └── properties/        # Property-based tests
-├── package.json
-├── tsconfig.json
-├── vitest.config.ts
-└── README.md
+│   ├── unit/                       # Unit tests
+│   └── properties/                 # Property-based tests
+└── .kiro/specs/                    # Feature specifications
+    └── parse-ad-requirements/
+        ├── requirements.md
+        ├── design.md
+        └── tasks.md
 ```
 
-## How It Works
+## Available Tools
 
-### 1. FastMCP Server
+### parseAdRequirements
 
-The server is initialized with FastMCP and configured for HTTP streaming:
+Parse natural language advertising campaign requirements into structured parameters.
 
-```typescript
-const server = new FastMCP({
-  name: "MCP-UI FastMCP Demo",
-  version: "1.0.0"
-});
+**Parameters:**
+- `requestText` (string, required): Natural language campaign description
 
-server.start({
-  transportType: "httpStream",
-  httpStream: { port: 8080 }
-});
-```
+**Returns:**
+- Interactive mcp-ui component displaying extracted parameters
+- Visual indicators for missing fields
+- Confirmation button when all fields are complete
 
-### 2. Tool Registration
+### greet
 
-Each tool is defined with Zod schema validation:
+Generate a personalized greeting (demo tool).
 
-```typescript
-export const greetingTool = {
-  name: 'greet',
-  description: 'Generate a personalized greeting',
-  parameters: z.object({
-    name: z.string().min(1)
-  }),
-  execute: async (args) => {
-    // Tool logic
-  }
-};
+### button
 
-server.addTool(greetingTool);
-```
+Handle button interactions (demo tool).
 
-### 3. UIResource Creation
+### counter
 
-UIResources are created using `@mcp-ui/server`:
+Interactive counter with increment/decrement (demo tool).
 
-```typescript
-import { createUIResource } from '@mcp-ui/server';
+## MCP Endpoints
 
-const uiResource = createUIResource({
-  uri: 'ui://greeting/alice',
-  content: {
-    type: 'rawHtml',
-    htmlString: '<div>Hello, Alice!</div>'
-  },
-  encoding: 'text',
-  metadata: {
-    title: 'Greeting',
-    description: 'Personalized greeting'
-  }
-});
-```
+- **MCP Endpoint**: `http://localhost:8080/mcp`
+- **SSE Endpoint**: `http://localhost:8080/sse`
+- **Health Check**: `http://localhost:8080/ready`
 
-### 4. Interactive Components
+## Technology Stack
 
-UI components communicate with the server using `postMessage`:
+- **FastMCP** (^3.23.1) - MCP server framework
+- **@mcp-ui/server** (^5.13.1) - Interactive UI components
+- **@anthropic-ai/claude-agent-sdk** (^0.1.54) - Claude Agent integration
+- **Zod** (^3.22.0) - Runtime type validation
+- **TypeScript** (^5.3.0) - Type-safe development
+- **Vitest** (^1.2.0) - Testing framework
+- **fast-check** (^3.15.0) - Property-based testing
 
-```javascript
-window.parent.postMessage({
-  type: 'tool',
-  payload: {
-    toolName: 'button',
-    params: { action: 'clicked' }
-  }
-}, '*');
-```
+## Testing
 
-## Best Practices Demonstrated
+The project includes comprehensive test coverage:
 
-- ✅ Semantic URIs (`ui://resource-type/id`)
-- ✅ Inline CSS for all styling
-- ✅ Metadata with title and description
-- ✅ PostMessage for interactive elements
-- ✅ Zod schema validation
-- ✅ Type-safe tool definitions
-- ✅ Error handling
-- ✅ Proper TypeScript configuration
+- **Unit Tests**: Test individual components and functions
+- **Property-Based Tests**: Verify correctness properties across generated inputs
+  - Schema round-trip validation
+  - Input validation enforcement
+  - UIResource structure compliance
+  - Visual distinction for missing fields
+  - Confirmation button presence logic
 
-## Learn More
-
-- [FastMCP Documentation](https://github.com/punkpeye/fastmcp)
-- [mcp-ui Documentation](https://mcpui.dev/)
-- [Model Context Protocol](https://modelcontextprotocol.io/)
-- [Zod Documentation](https://zod.dev/)
+All tests run with 100+ iterations to ensure robustness.
 
 ## License
 

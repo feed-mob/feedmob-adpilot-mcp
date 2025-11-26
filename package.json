@@ -15,20 +15,27 @@
     "mcp:inspect": "npx fastmcp inspect src/index.ts",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": ["mcp", "fastmcp", "mcp-ui", "typescript", "demo"],
+  "keywords": [
+    "mcp",
+    "fastmcp",
+    "mcp-ui",
+    "typescript",
+    "demo"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "fastmcp": "^3.23.1",
+    "@anthropic-ai/claude-agent-sdk": "^0.1.54",
     "@mcp-ui/server": "^5.13.1",
+    "fastmcp": "^3.23.1",
     "zod": "^3.22.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
+    "@vitest/coverage-v8": "^1.2.0",
+    "fast-check": "^3.15.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.0",
-    "vitest": "^1.2.0",
-    "@vitest/coverage-v8": "^1.2.0",
-    "fast-check": "^3.15.0"
+    "vitest": "^1.2.0"
   }
 }

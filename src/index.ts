@@ -2,10 +2,11 @@ import { FastMCP } from 'fastmcp';
 import { greetingTool } from './tools/greeting.js';
 import { buttonTool } from './tools/button.js';
 import { counterTool } from './tools/counter.js';
+import { parseAdRequirementsTool } from './tools/parse-ad-requirements.js';
 
 // Initialize FastMCP server
 const server = new FastMCP({
-  name: "MCP-UI FastMCP Demo",
+  name: "FeedMob AdPilot MCP",
   version: "1.0.0"
 });
 
@@ -13,8 +14,9 @@ const server = new FastMCP({
 server.addTool(greetingTool);
 server.addTool(buttonTool);
 server.addTool(counterTool);
+server.addTool(parseAdRequirementsTool);
 
-console.log('✅ Registered tools: greet, button, counter');
+console.log('✅ Registered tools: greet, button, counter, parseAdRequirements');
 
 // Start server with HTTP streaming transport
 server.start({
@@ -25,7 +27,7 @@ server.start({
   }
 });
 
-console.log('🚀 MCP-UI FastMCP Demo Server started');
+console.log('🚀 FeedMob AdPilot MCP Server started');
 console.log('📍 MCP endpoint: http://localhost:8080/mcp');
 console.log('📍 SSE endpoint: http://localhost:8080/sse');
 console.log('📍 Health check: http://localhost:8080/ready');

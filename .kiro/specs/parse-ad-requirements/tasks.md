@@ -1,0 +1,106 @@
+# Implementation Plan
+
+- [x] 1. Create Zod schemas for campaign parameters and validation
+  - [x] 1.1 Create `src/schemas/campaign-params.ts` with CampaignParametersSchema
+    - Define schema with all 12 campaign parameter fields as nullable strings
+    - Add URL validation for product_or_service_url field
+    - Export TypeScript types inferred from schemas
+    - _Requirements: 2.1, 6.2_
+  - [x] 1.2 Create ValidationResultSchema in the same file
+    - Define success boolean, parameters object, missingFields array, optional suggestions
+    - _Requirements: 2.4, 6.2_
+  - [x] 1.3 Create ParseAdRequirementsInputSchema
+    - Validate requestText is non-empty and contains non-whitespace
+    - _Requirements: 1.1, 1.2, 6.1_
+  - [x]* 1.4 Write property test for schema round-trip
+    - **Property 10: Schema validation round-trip**
+    - **Validates: Requirements 6.4**
+  - [x]* 1.5 Write property test for input schema enforcement
+    - **Property 11: Input schema enforcement**
+    - **Validates: Requirements 6.1, 6.3**
+
+- [x] 2. Create the Agent Skill file for parsing requirements
+  - [x] 2.1 Create `skills/parse-ad-requirements.md` with sub-agent instructions
+    - Define step-by-step workflow for extracting campaign parameters
+    - Include field definitions and extraction rules
+    - Add examples for each field type
+    - Include instructions for handling missing fields
+    - _Requirements: 5.1, 5.2, 5.3_
+
+- [x] 3. Create the Agent Service for Claude SDK integration
+  - [x] 3.1 Create `src/services/ad-requirements-agent.ts`
+    - Import and configure Claude Agent SDK query function
+    - Set up skill loading from project root
+    - Implement parseRequirements function that invokes the agent
+    - Parse agent response into ValidationResult structure
+    - _Requirements: 1.3, 5.1, 5.4_
+  - [x]* 3.2 Write property test for output schema enforcement
+    - **Property 12: Output schema enforcement**
+    - **Validates: Requirements 6.2**
+
+- [x] 4. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 5. Create UI factory functions for displaying results
+  - [x] 5.1 Create `src/utils/ad-requirements-ui.ts` with createParametersUI function
+    - Generate UIResource with campaign parameters in card layout
+    - Include inline CSS with design system variables
+    - Handle both complete and incomplete parameter sets
+    - Add confirmation button when all fields are complete
+    - _Requirements: 4.1, 4.2, 4.3, 4.5_
+  - [x] 5.2 Add createMissingFieldUI function
+    - Generate UIResource highlighting missing fields
+    - Include distinct styling for missing vs populated fields
+    - _Requirements: 4.4_
+  - [x] 5.3 Add createErrorUI function
+    - Generate error UIResource with user-friendly message
+    - Include retry button where applicable
+    - _Requirements: 7.1, 7.2, 7.3_
+  - [x]* 5.4 Write property test for UIResource generation
+    - **Property 5: UIResource generation for parameters**
+    - **Validates: Requirements 4.1**
+  - [x]* 5.5 Write property test for UIResource styling consistency
+    - **Property 6: UIResource styling consistency**
+    - **Validates: Requirements 4.2**
+  - [x]* 5.6 Write property test for UIResource structure
+    - **Property 7: UIResource structure for parameters**
+    - **Validates: Requirements 4.3**
+  - [x]* 5.7 Write property test for missing field visual distinction
+    - **Property 8: Missing field visual distinction**
+    - **Validates: Requirements 4.4**
+  - [x]* 5.8 Write property test for confirmation button presence
+    - **Property 9: Confirmation button presence**
+    - **Validates: Requirements 4.5**
+
+- [x] 6. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 7. Create the main parseAdRequirements tool
+  - [x] 7.1 Create `src/tools/parse-ad-requirements.ts`
+    - Define FastMCP tool with Zod input schema
+    - Implement execute function that orchestrates workflow
+    - Call agent service to parse requirements
+    - Generate appropriate UIResource based on result
+    - Handle errors and return error UIResource
+    - _Requirements: 1.1, 1.2, 1.3, 7.1, 7.2, 7.3_
+  - [x]* 7.2 Write property test for valid input acceptance
+    - **Property 1: Valid input acceptance**
+    - **Validates: Requirements 1.1, 1.3**
+  - [x]* 7.3 Write property test for whitespace-only input rejection
+    - **Property 2: Whitespace-only input rejection**
+    - **Validates: Requirements 1.2**
+  - [x]* 7.4 Write property test for ValidationResult structure completeness
+    - **Property 3: ValidationResult structure completeness**
+    - **Validates: Requirements 2.1, 2.4**
+  - [ ]* 7.5 Write property test for success flag consistency
+    - **Property 4: Success flag consistency**
+    - **Validates: Requirements 3.4**
+
+- [x] 8. Register the tool with FastMCP server
+  - [x] 8.1 Update `src/index.ts` to import and register parseAdRequirementsTool
+    - Add import statement for the new tool
+    - Call server.addTool() with the tool configuration
+    - _Requirements: 1.1_
+
+- [x] 9. Final Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.

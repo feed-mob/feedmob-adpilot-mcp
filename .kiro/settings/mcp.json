@@ -24,7 +24,11 @@
         "-y",
         "@upstash/context7-mcp"
       ],
-      "disabled": false
+      "disabled": false,
+      "autoApprove": [
+        "resolve-library-id",
+        "get-library-docs"
+      ]
     },
     "sequential-thinking": {
       "command": "bunx",
@@ -42,12 +46,15 @@
         "fetch_mcp_ui_documentation"
       ]
     },
-   "agent-skills": {
+    "agent-skills": {
       "command": "uvx",
-      "args": ["agent-skills-mcp"],
+      "args": [
+        "agent-skills-mcp"
+      ],
       "env": {
         "SKILL_FOLDER": "./.kiro/settings/skills"
-      }
+      },
+      "disabled": false
     }
   }
 }
