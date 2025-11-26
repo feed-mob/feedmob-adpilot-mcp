@@ -18,16 +18,15 @@ export class AdRequirementsAgent {
 
       const assistantSnippets: string[] = [];
       let resultMessage: SDKResultMessage | undefined;
+      const pluginPath = "plugins/parse-ad-requirements"
 
       // Run the agent with the skill
       for await (const message of query({
         prompt,
         options: {
-          cwd: process.cwd(),
-          settingSources: ['user', 'project'],
+          plugins: [{ type: 'local', path: pluginPath }],
           allowedTools: ['Skill', 'Read'],
-          maxTurns: 3,
-          model: 'claude-sonnet-4-5'
+          maxTurns: 100,
         }
       })) {
         if (message.type === 'assistant') {
