@@ -1,0 +1,46 @@
+{
+  "mcpServers": {
+    "fetch": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-fetch"
+      ],
+      "env": {},
+      "disabled": false,
+      "autoApprove": []
+    },
+    "exa": {
+      "url": "https://mcp.exa.ai/mcp",
+      "headers": {},
+      "disabled": false,
+      "autoApprove": [
+        "get_code_context_exa"
+      ]
+    },
+    "context7": {
+      "command": "bunx",
+      "args": [
+        "bunx",
+        "-y",
+        "@upstash/context7-mcp"
+      ],
+      "disabled": false
+    },
+    "sequential-thinking": {
+      "command": "bunx",
+      "args": [
+        "bunx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "disabled": false
+    },
+    "mcp-ui-docs": {
+      "url": "https://gitmcp.io/idosal/mcp-ui",
+      "disabled": false,
+      "autoApprove": [
+        "fetch_mcp_ui_documentation"
+      ]
+    }
+  }
+}
