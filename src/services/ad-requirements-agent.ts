@@ -14,19 +14,64 @@ export class AdRequirementsAgent {
    */
   async parseRequirements(requestText: string): Promise<ValidationResult> {
     try {
-      const prompt = `Parse the following advertising campaign request and extract structured parameters:\n\n"${requestText}"\n\nReturn ONLY a valid JSON object with the campaign parameters following the parse-ad-requirements skill instructions. Do not include any explanatory text before or after the JSON.`;
+      // Instead of using a plugin, embed the skill instructions directly in the system prompt
+      const skillInstructions = `You are an advertising campaign requirements parser. Extract structured parameters from campaign descriptions.
+
+Extract these 12 fields:
+1. product_or_service: The product, service, or brand
+2. product_or_service_url: Website or landing page URL
+3. campaign_name: Descriptive name for the campaign
+4. target_audience: Demographics, interests, or characteristics
+5. geography: Geographic targeting
+6. ad_format: Type of ad creative (video, carousel, static image, etc.)
+7. budget: Campaign budget with currency
+8. platform: Advertising platform (TikTok, Facebook, Instagram, etc.)
+9. kpi: Key performance indicators or success metrics
+10. time_period: Campaign duration or timeline
+11. creative_direction: Style, tone, or creative requirements
+12. other_details: Additional requirements or context
+
+Return ONLY a JSON object in this exact format (no markdown, no explanations):
+{
+  "success": true/false,
+  "parameters": {
+    "product_or_service": "value or null",
+    "product_or_service_url": "value or null",
+    "campaign_name": "value or null",
+    "target_audience": "value or null",
+    "geography": "value or null",
+    "ad_format": "value or null",
+    "budget": "value or null",
+    "platform": "value or null",
+    "kpi": "value or null",
+    "time_period": "value or null",
+    "creative_direction": "value or null",
+    "other_details": "value or null"
+  },
+  "missingFields": ["field1", "field2"],
+  "suggestions": {
+    "field1": "helpful suggestion",
+    "field2": "helpful suggestion"
+  }
+}
+
+Rules:
+- Use null for missing fields
+- Set success to true only if ALL fields are populated
+- List all missing field names in missingFields array
+- Provide helpful suggestions for missing fields`;
+
+      const prompt = `${skillInstructions}\n\nCampaign request: "${requestText}"`;
 
       const assistantSnippets: string[] = [];
       let resultMessage: SDKResultMessage | undefined;
-      const pluginPath = "plugins/parse-ad-requirements"
 
-      // Run the agent with the skill
+      // Run the agent without plugins
       for await (const message of query({
         prompt,
         options: {
-          plugins: [{ type: 'local', path: pluginPath }],
-          allowedTools: ['Skill', 'Read'],
-          maxTurns: 100,
+          allowedTools: ['Read'],
+          maxTurns: 3,
         }
       })) {
         if (message.type === 'assistant') {
