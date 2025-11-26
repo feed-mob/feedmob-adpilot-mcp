@@ -2,16 +2,16 @@
 
 ## Overview
 
-The FeedMob AdPilot MCP system is a conversational advertising assistant built as an MCP server that helps advertisers create comprehensive ad campaigns through natural language interaction. The system leverages the Model Context Protocol ecosystem to provide an interactive, component-based UI experience while orchestrating multiple specialized sub-agents for different aspects of ad creation.
+The FeedMob AdPilot MCP system is a conversational advertising assistant built using the FastMCP framework that helps advertisers create comprehensive ad campaigns through natural language interaction. The system leverages the Model Context Protocol ecosystem to provide an interactive, component-based UI experience powered by mcp-ui.
 
 The architecture follows a modular design with clear separation between:
-- **Transport Layer**: HTTP/SSE-based MCP communication
-- **MCP Tools Layer**: MCP tools and prompts that orchestrate sub-agents or vanilla functions
-- **Agent Orchestration**: Sub-agents built using claude-agent-sdk + plugins + agent skills, wrapped as MCP tools
-- **UI Rendering**: Interactive components via mcp-ui
+- **FastMCP Server**: HTTP streaming-based MCP server with built-in authentication and session management
+- **MCP Tools Layer**: FastMCP tools that process campaign requests and generate creative assets
+- **Claude API Integration**: Direct Claude API calls for natural language processing and content generation
+- **UI Rendering**: Interactive components via @mcp-ui/server and @mcp-ui/client
 - **Data Persistence**: PostgreSQL for users, campaigns, and asset storage
-- **Authentication**: Google OAuth for user authentication
-- **Chat Interface**: Conversational UI through scira-mcp-ui-chat
+- **Authentication**: Google OAuth integrated through FastMCP's authentication system
+- **Image Generation**: Integration with external image generation services (e.g., DALL-E, Midjourney, Stable Diffusion)
 
 ## Architecture
 
@@ -19,46 +19,60 @@ The architecture follows a modular design with clear separation between:
 
 ```mermaid
 graph TB
-    Client[MCP Client with mcp-ui support]
-    Server[AdPilot MCP Server]
+    Client[MCP Client with @mcp-ui/client]
+    FastMCP[FastMCP Server]
     DB[(PostgreSQL)]
     OAuth[Google OAuth]
+    Claude[Claude API]
+    ImgAPI[Image Generation API]
     
-    subgraph "MCP Tools Layer"
-        Tool1[Parse Campaign Tool]
-        Tool2[Generate Copy Tool]
-        Tool3[Generate Image Tool]
-        Tool4[Get Campaign History Tool]
+    subgraph "FastMCP Tools"
+        Tool1[parseCampaignRequest]
+        Tool2[generateAdCopy]
+        Tool3[generateAdImages]
+        Tool4[generateMixedMedia]
+        Tool5[getCampaignHistory]
     end
     
-    subgraph "Sub-Agents wrapped as MCP Tools"
-        Parser[Parameter Parser Agent<br/>claude-agent-sdk + plugins + skills<br/>includes validation]
-        CopyGen[Copy Generator Agent<br/>claude-agent-sdk + plugins + skills]
-        ImageGen[Image Generator Agent<br/>claude-agent-sdk + plugins + skills]
+    subgraph "Core Services"
+        DBService[Database Service]
+        UIService[UIResource Generator<br/>@mcp-ui/server]
+        AuthService[Auth Service]
     end
     
-    subgraph "Vanilla Functions"
-        DBFunc[Database Operations]
-        UIFunc[UIResource Generation]
-    end
+    Client <-->|HTTP Streaming| FastMCP
+    Client -->|OAuth Flow| OAuth
+    OAuth -->|User Token| FastMCP
+    FastMCP -->|Authenticate| AuthService
+    AuthService <-->|User CRUD| DB
     
-    Client <-->|MCP Protocol| Server
-    Client -->|Authenticate| OAuth
-    OAuth -->|User Info| Server
-    Server -->|Expose| Tool1
-    Server -->|Expose| Tool2
-    Server -->|Expose| Tool3
-    Server -->|Expose| Tool4
-    Tool1 -->|Invoke| Parser
-    Tool1 -->|Call| DBFunc
-    Tool2 -->|Invoke| CopyGen
-    Tool3 -->|Invoke| ImageGen
-    Tool4 -->|Call| DBFunc
-    Tool1 -->|Call| UIFunc
-    Tool2 -->|Call| UIFunc
-    Tool3 -->|Call| UIFunc
-    DBFunc <-->|SQL| DB
-    Server <-->|SQL| DB
+    FastMCP -->|Register| Tool1
+    FastMCP -->|Register| Tool2
+    FastMCP -->|Register| Tool3
+    FastMCP -->|Register| Tool4
+    FastMCP -->|Register| Tool5
+    
+    Tool1 -->|Extract Parameters| Claude
+    Tool1 -->|Store Campaign| DBService
+    Tool1 -->|Create UIResource| UIService
+    
+    Tool2 -->|Generate Copy| Claude
+    Tool2 -->|Store Assets| DBService
+    Tool2 -->|Create UIResource| UIService
+    
+    Tool3 -->|Generate Images| ImgAPI
+    Tool3 -->|Store Assets| DBService
+    Tool3 -->|Create UIResource| UIService
+    
+    Tool4 -->|Generate Images| ImgAPI
+    Tool4 -->|Generate Overlay| Claude
+    Tool4 -->|Store Assets| DBService
+    Tool4 -->|Create UIResource| UIService
+    
+    Tool5 -->|Query History| DBService
+    Tool5 -->|Create UIResource| UIService
+    
+    DBService <-->|SQL| DB
 ```
 
 ### Component Interaction Flow
@@ -66,124 +80,166 @@ graph TB
 ```mermaid
 sequenceDiagram
     participant User
-    participant Client as MCP Client
+    participant Client as MCP Client<br/>with @mcp-ui/client
     participant OAuth as Google OAuth
-    participant Server as AdPilot Server
-    participant Tool as MCP Tool
-    participant SubAgent as Sub-Agent
+    participant FastMCP as FastMCP Server
+    participant Tool as FastMCP Tool
+    participant Claude as Claude API
     participant DB as PostgreSQL
+    participant UIGen as UIResource Generator
     
     User->>Client: Authenticate
     Client->>OAuth: OAuth flow
     OAuth-->>Client: User token
-    Client->>Server: Connect with token
-    Server->>DB: Get/Create user
+    Client->>FastMCP: Connect with token
+    FastMCP->>DB: Get/Create user
     
     User->>Client: Enter campaign request
-    Client->>Server: Call parseCampaignRequest tool
-    Server->>Tool: Invoke tool handler
-    Tool->>SubAgent: Invoke parser sub-agent
-    SubAgent-->>Tool: Extracted parameters
+    Client->>FastMCP: Call parseCampaignRequest tool
+    FastMCP->>Tool: Execute tool handler
+    Tool->>Claude: Extract parameters from text
+    Claude-->>Tool: Structured parameters
     Tool->>DB: Store campaign data
-    Tool-->>Server: UIResource with parameters
-    Server-->>Client: Return UIResource
+    Tool->>UIGen: Create parameter UIResource
+    UIGen-->>Tool: UIResource object
+    Tool-->>FastMCP: Return UIResource
+    FastMCP-->>Client: Return tool result
+    Client->>Client: Render with UIResourceRenderer
     Client->>User: Display interactive UI
     
     User->>Client: Confirm parameters
-    Client->>Server: Call generateAdCopy tool
-    Server->>Tool: Invoke tool handler
-    Tool->>SubAgent: Invoke copy generator sub-agent
-    SubAgent-->>Tool: Generated copy
+    Client->>FastMCP: Call generateAdCopy tool
+    FastMCP->>Tool: Execute tool handler
+    Tool->>Claude: Generate ad copy
+    Claude-->>Tool: Generated copy
     Tool->>DB: Store creative assets
-    Tool-->>Server: UIResource with copy
-    Server-->>Client: Return UIResource
+    Tool->>UIGen: Create copy UIResource
+    UIGen-->>Tool: UIResource object
+    Tool-->>FastMCP: Return UIResource
+    FastMCP-->>Client: Return tool result
+    Client->>Client: Render with UIResourceRenderer
     Client->>User: Display editable copy
 ```
 
 ## Components and Interfaces
 
-### 1. MCP Server Core
+### 1. FastMCP Server Core
 
 **Responsibilities:**
-- Handle MCP protocol communication via StreamableHTTPServerTransport
-- Register and expose MCP tools
-- Manage sub-agent lifecycle and invocation
+- Handle MCP protocol communication via HTTP streaming
+- Register and expose FastMCP tools with Zod schemas
+- Manage authentication and user sessions
 - Coordinate between different system components
 
 **Key Interfaces:**
 ```typescript
-interface AdPilotServer {
-  // MCP server instance
-  server: Server;
-  
-  // Tool handlers
-  parseCampaignRequest(input: string): Promise<CampaignParameters>;
-  generateAdCopy(params: CampaignParameters): Promise<AdCopy>;
-  generateAdImages(params: CampaignParameters): Promise<ImageAsset[]>;
-  generateMixedMedia(params: CampaignParameters): Promise<MixedMediaAsset>;
-  
-  // Sub-agent management
-  invokeSubAgent(agentType: string, prompt: string, context: any): Promise<any>;
+import { FastMCP } from 'fastmcp';
+import { z } from 'zod';
+
+interface AdPilotServerConfig {
+  name: string;
+  version: string;
+  authenticate: (request: Request) => Promise<AuthUser>;
 }
+
+interface AuthUser {
+  userId: string;
+  email: string;
+  name: string;
+}
+
+// FastMCP server instance
+const server = new FastMCP({
+  name: "FeedMob AdPilot",
+  version: "1.0.0",
+  authenticate: async (request) => {
+    // Google OAuth authentication logic
+    return { userId, email, name };
+  }
+});
 ```
 
-### 2. MCP Tools Layer
+### 2. FastMCP Tools Layer
 
 **Responsibilities:**
-- Expose MCP tools that orchestrate sub-agents or vanilla functions
-- Handle tool invocation from MCP clients
-- Route requests to appropriate sub-agents or functions
-- Aggregate and format responses
+- Define FastMCP tools with Zod schemas for type-safe parameters
+- Handle tool execution with authenticated user context
+- Call Claude API for natural language processing and content generation
+- Call external image generation APIs
+- Generate UIResources using @mcp-ui/server
+- Return structured responses to MCP clients
 
-**MCP Tools:**
-- **parseCampaignRequest**: Invokes Parameter Parser sub-agent (includes inline validation)
-- **generateAdCopy**: Invokes Copy Generator sub-agent
-- **generateAdImages**: Invokes Image Generator sub-agent
-- **generateMixedMedia**: Invokes Image Generator sub-agent with copy overlay
-- **getCampaignHistory**: Calls vanilla database function
+**FastMCP Tools:**
+- **parseCampaignRequest**: Extracts structured parameters from natural language using Claude API
+- **generateAdCopy**: Generates ad copy using Claude API
+- **generateAdImages**: Generates images using external image API
+- **generateMixedMedia**: Combines image generation with text overlay
+- **getCampaignHistory**: Retrieves user's campaign history from database
 
 **Key Interfaces:**
 ```typescript
-interface MCPToolDefinition {
-  name: string;
-  description: string;
-  inputSchema: JSONSchema;
-  handler: (input: any, context: ToolContext) => Promise<any>;
-}
+import { z } from 'zod';
 
-interface ToolContext {
-  userId: string;
+// Tool parameter schemas
+const CampaignRequestSchema = z.object({
+  requestText: z.string().describe("Natural language campaign request")
+});
+
+const CampaignParamsSchema = z.object({
+  campaignId: z.string().uuid()
+});
+
+// Tool execution context (provided by FastMCP)
+interface ToolExecutionContext {
+  user: AuthUser; // From authenticate function
   sessionId: string;
 }
+
+// Example tool definition
+server.addTool({
+  name: "parseCampaignRequest",
+  description: "Parse natural language campaign request into structured parameters",
+  parameters: CampaignRequestSchema,
+  execute: async (args, context) => {
+    // Tool implementation
+    return uiResource;
+  }
+});
 ```
 
-### 3. Sub-Agent Orchestrator
+### 3. Claude API Integration
 
 **Responsibilities:**
-- Build sub-agents using claude-agent-sdk + plugins + agent skills
-- Wrap sub-agents as callable functions for MCP tools
-- Manage sub-agent lifecycle and configuration
-
-**Sub-Agent Types:**
-- **Parameter Parser Agent**: Built with claude-agent-sdk, uses NLP skills to extract structured data and validate budget/platform combinations
-- **Copy Generator Agent**: Built with claude-agent-sdk, uses creative writing skills and platform-specific plugins
-- **Image Generator Agent**: Built with claude-agent-sdk, uses image generation plugins
+- Make direct API calls to Claude for natural language processing
+- Extract structured data from unstructured text
+- Generate creative content (ad copy, headlines, CTAs)
+- Validate and refine campaign parameters
+- Handle API errors and rate limiting
 
 **Key Interfaces:**
 ```typescript
-interface SubAgentConfig {
-  name: string;
-  description: string;
-  instructions: string;
-  plugins: string[];
-  skills: string[];
-  model?: string;
+import Anthropic from '@anthropic-ai/sdk';
+
+interface ClaudeService {
+  client: Anthropic;
+  
+  // Extract campaign parameters from natural language
+  extractCampaignParameters(requestText: string): Promise<CampaignParameters>;
+  
+  // Generate ad copy variations
+  generateAdCopy(params: CampaignParameters): Promise<AdCopy>;
+  
+  // Generate text overlay for mixed media
+  generateTextOverlay(params: CampaignParameters, imageContext: string): Promise<TextOverlay>;
+  
+  // Validate and suggest improvements
+  validateCampaign(params: CampaignParameters): Promise<ValidationResult>;
 }
 
-interface SubAgentWrapper {
-  buildAgent(config: SubAgentConfig): Promise<Agent>;
-  wrapAsMCPTool(agent: Agent): MCPToolDefinition;
-  invoke(agent: Agent, input: any): Promise<any>;
+interface ValidationResult {
+  isValid: boolean;
+  warnings: string[];
+  suggestions: string[];
 }
 ```
 
@@ -191,16 +247,66 @@ interface SubAgentWrapper {
 
 **Responsibilities:**
 - Create UIResource objects using @mcp-ui/server
-- Format data for interactive display
+- Format data for interactive display with editing capabilities
 - Handle metadata and rendering preferences
+- Support multiple content types (HTML, external URLs, Remote DOM)
 
 **Key Interfaces:**
 ```typescript
+import { createUIResource } from '@mcp-ui/server';
+
 interface UIResourceGenerator {
+  // Create interactive parameter display with edit/confirm buttons
   createParameterDisplay(params: CampaignParameters): UIResource;
+  
+  // Create editable copy display with variations
   createCopyDisplay(copy: AdCopy): UIResource;
+  
+  // Create image gallery with regeneration options
   createImageDisplay(images: ImageAsset[]): UIResource;
+  
+  // Create mixed media display with independent text/image editing
   createMixedMediaDisplay(asset: MixedMediaAsset): UIResource;
+  
+  // Create campaign history list
+  createHistoryDisplay(campaigns: Campaign[]): UIResource;
+}
+
+// Example implementation
+function createParameterDisplay(params: CampaignParameters): UIResource {
+  const htmlContent = `
+    <div class="campaign-params">
+      <h2>Campaign Parameters</h2>
+      <div class="param-group">
+        <label>Target Audience:</label>
+        <p>${params.targetAudience.demographics.join(', ')}</p>
+      </div>
+      <div class="param-group">
+        <label>Budget:</label>
+        <p>${params.budget.currency} ${params.budget.amount}</p>
+      </div>
+      <div class="actions">
+        <button onclick="window.parent.postMessage({
+          type: 'tool',
+          payload: { toolName: 'confirmParameters', params: { campaignId: '${params.id}' } }
+        }, '*')">Confirm</button>
+        <button onclick="window.parent.postMessage({
+          type: 'tool',
+          payload: { toolName: 'editParameters', params: { campaignId: '${params.id}' } }
+        }, '*')">Edit</button>
+      </div>
+    </div>
+  `;
+  
+  return createUIResource({
+    uri: `ui://campaign-params/${params.id}`,
+    content: { type: 'rawHtml', htmlString: htmlContent },
+    encoding: 'text',
+    metadata: {
+      title: 'Campaign Parameters',
+      description: 'Review and confirm your campaign parameters'
+    }
+  });
 }
 ```
 
@@ -254,19 +360,38 @@ interface DatabaseService {
 }
 ```
 
-### 7. Chat Interface Integration
+### 7. Image Generation Service
 
 **Responsibilities:**
-- Render conversational UI using scira-mcp-ui-chat
-- Embed UIResource components within chat flow
-- Maintain conversation history
+- Integrate with external image generation APIs (DALL-E, Midjourney, Stable Diffusion)
+- Handle platform-specific image dimensions and formats
+- Manage image storage and URLs
+- Handle generation failures gracefully
 
 **Key Interfaces:**
 ```typescript
-interface ChatIntegration {
-  sendMessage(message: string): void;
-  displayUIResource(resource: UIResource): void;
-  getConversationHistory(): Message[];
+interface ImageGenerationService {
+  // Generate images based on campaign parameters
+  generateImages(params: ImageGenerationParams): Promise<ImageAsset[]>;
+  
+  // Get platform-specific dimensions
+  getPlatformDimensions(platform: string): { width: number; height: number };
+  
+  // Store generated image and return URL
+  storeImage(imageData: Buffer, metadata: ImageMetadata): Promise<string>;
+}
+
+interface ImageGenerationParams {
+  prompt: string;
+  dimensions: { width: number; height: number };
+  style?: string;
+  count?: number;
+}
+
+interface ImageMetadata {
+  campaignId: string;
+  platform: string;
+  format: string;
 }
 ```
 

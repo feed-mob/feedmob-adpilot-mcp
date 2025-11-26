@@ -2,16 +2,17 @@
 
 ## Introduction
 
-The FeedMob AdPilot MCP system is a conversational advertising assistant that integrates with the Model Context Protocol ecosystem to help advertisers create comprehensive ad campaigns. The system interprets campaign requirements through natural language text input, generates ad copy and creative materials, and presents results through interactive UI components. Built on TypeScript and PostgreSQL, it leverages multiple MCP tools including claude-agent-sdk for sub-agent orchestration, mcp-ui for interactive displays, and scira-mcp-ui-chat for the conversational interface.
+The FeedMob AdPilot MCP system is a conversational advertising assistant that integrates with the Model Context Protocol ecosystem to help advertisers create comprehensive ad campaigns. The system interprets campaign requirements through natural language text input, generates ad copy and creative materials, and presents results through interactive UI components. Built on TypeScript with FastMCP framework and PostgreSQL, it leverages mcp-ui for interactive displays, Google OAuth for authentication, and integrates with external image generation services.
 
 ## Glossary
 
 - **AdPilot System**: The complete MCP-based conversational advertising assistant
 - **Campaign Parameters**: Structured data extracted from advertiser input including target audience, budget, platform, and KPIs
 - **MCP Client**: A conversational interface that supports the Model Context Protocol
-- **Sub-Agent**: A specialized AI agent invoked through claude-agent-sdk to perform specific tasks
+- **FastMCP**: TypeScript framework for building MCP servers with built-in authentication, sessions, and tool management
 - **Creative Asset**: Generated advertising materials including copy, images, or mixed media
 - **MCP-UI Component**: Interactive UI elements rendered through the mcp-ui protocol
+- **UIResource**: A structured object containing interactive UI content (HTML, external URLs, or Remote DOM)
 - **Campaign Request**: Natural language input from an advertiser describing their advertising needs
 - **KPI**: Key Performance Indicator such as CTR, installs, or conversions
 
@@ -24,7 +25,7 @@ The FeedMob AdPilot MCP system is a conversational advertising assistant that in
 #### Acceptance Criteria
 
 1. WHEN an advertiser provides a campaign request through text input, THEN the AdPilot System SHALL accept and process the natural language description
-2. WHEN the AdPilot System receives a campaign request, THEN the AdPilot System SHALL invoke a Sub-Agent to interpret the natural language content
+2. WHEN the AdPilot System receives a campaign request, THEN the AdPilot System SHALL use Claude API to interpret the natural language content and extract structured parameters
 3. WHEN the campaign request contains ambiguous information, THEN the AdPilot System SHALL prompt the advertiser for clarification through the MCP Client
 4. WHEN the campaign request is successfully received, THEN the AdPilot System SHALL acknowledge receipt to the advertiser within 2 seconds
 
