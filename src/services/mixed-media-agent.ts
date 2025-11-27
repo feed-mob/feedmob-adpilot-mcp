@@ -31,7 +31,8 @@ export class MixedMediaAgent {
       // Create the result
       const result: MixedMediaResult = {
         generated_at: new Date().toISOString(),
-        composite_image_data: image.image_data,  // Using original image for now
+        composite_image_url: image.image_url,  // Using original image URL for now
+        thumbnail_url: image.thumbnail_url,
         mime_type: image.mime_type,
         platform,
         dimensions,

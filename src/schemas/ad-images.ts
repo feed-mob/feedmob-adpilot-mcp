@@ -32,7 +32,9 @@ export const ImageVariationSchema = z.object({
   variation_id: z.enum(['A', 'B'], {
     errorMap: () => ({ message: 'Variation ID must be A or B' })
   }),
-  image_data: z.string().min(1, 'Image data must not be empty'),  // base64 encoded
+  image_url: z.string().url('Image URL must be a valid URL'),
+  thumbnail_url: z.string().url().nullable().optional(),
+  file_id: z.string().nullable().optional(),
   mime_type: z.string().regex(
     /^image\/(png|jpeg|webp)$/,
     'Mime type must be image/png, image/jpeg, or image/webp'

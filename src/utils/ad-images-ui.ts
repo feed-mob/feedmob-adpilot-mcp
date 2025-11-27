@@ -289,7 +289,7 @@ export function createAdImagesUI(result: AdImagesResult) {
           </div>
           
           <div class="image-container">
-            <img src="data:${variationA.mime_type};base64,${variationA.image_data}" alt="Variation A" />
+            <img src="${variationA.image_url}" alt="Variation A" />
           </div>
 
           <div class="visual-approach">
@@ -313,7 +313,7 @@ export function createAdImagesUI(result: AdImagesResult) {
           </div>
           
           <div class="image-container">
-            <img src="data:${variationB.mime_type};base64,${variationB.image_data}" alt="Variation B" />
+            <img src="${variationB.image_url}" alt="Variation B" />
           </div>
 
           <div class="visual-approach">

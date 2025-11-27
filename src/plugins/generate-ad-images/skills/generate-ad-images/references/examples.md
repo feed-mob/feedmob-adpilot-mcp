@@ -43,7 +43,9 @@ Leave space at top and bottom for text. Focus on achievement and self-care.
   "variations": [
     {
       "variation_id": "A",
-      "image_data": "[base64_encoded_image]",
+      "image_url": "https://ik.imagekit.io/your_id/ad-images/campaign/fitness_A.png",
+      "thumbnail_url": "https://ik.imagekit.io/your_id/tr:n-ik_ml_thumbnail/ad-images/campaign/fitness_A.png",
+      "file_id": "abc123",
       "mime_type": "image/png",
       "prompt_used": "Create a vibrant, energetic fitness image...",
       "visual_approach": "Energetic group HIIT workout with diverse Southeast Asian women, bright modern gym, warm motivating colors, dynamic movement",
@@ -51,7 +53,9 @@ Leave space at top and bottom for text. Focus on achievement and self-care.
     },
     {
       "variation_id": "B",
-      "image_data": "[base64_encoded_image]",
+      "image_url": "https://ik.imagekit.io/your_id/ad-images/campaign/fitness_B.png",
+      "thumbnail_url": "https://ik.imagekit.io/your_id/tr:n-ik_ml_thumbnail/ad-images/campaign/fitness_B.png",
+      "file_id": "def456",
       "mime_type": "image/png",
       "prompt_used": "Create an aspirational fitness image...",
       "visual_approach": "Solo achievement moment with woman checking fitness app, modern home setting, soft natural lighting, satisfied expression",
@@ -108,7 +112,9 @@ Leave space at top for headline. Focus on ritual and comfort.
   "variations": [
     {
       "variation_id": "A",
-      "image_data": "[base64_encoded_image]",
+      "image_url": "https://ik.imagekit.io/your_id/ad-images/campaign/coffee_A.jpg",
+      "thumbnail_url": "https://ik.imagekit.io/your_id/tr:n-ik_ml_thumbnail/ad-images/campaign/coffee_A.jpg",
+      "file_id": "ghi789",
       "mime_type": "image/jpeg",
       "prompt_used": "Create a warm, inviting coffee image...",
       "visual_approach": "Styled product shot with coffee cup and beans on rustic wood, morning sunlight, warm earth tones, overhead angle emphasizing craftsmanship",
@@ -116,7 +122,9 @@ Leave space at top for headline. Focus on ritual and comfort.
     },
     {
       "variation_id": "B",
-      "image_data": "[base64_encoded_image]",
+      "image_url": "https://ik.imagekit.io/your_id/ad-images/campaign/coffee_B.jpg",
+      "thumbnail_url": "https://ik.imagekit.io/your_id/tr:n-ik_ml_thumbnail/ad-images/campaign/coffee_B.jpg",
+      "file_id": "jkl012",
       "mime_type": "image/jpeg",
       "prompt_used": "Create a lifestyle coffee image...",
       "visual_approach": "Lifestyle moment with hands holding cup in cozy home, book and plants, soft natural light, warm muted colors, intimate close-up emphasizing ritual",
@@ -175,7 +183,9 @@ for headline. Focus on leadership and results.
   "variations": [
     {
       "variation_id": "A",
-      "image_data": "[base64_encoded_image]",
+      "image_url": "https://ik.imagekit.io/your_id/ad-images/campaign/saas_A.png",
+      "thumbnail_url": "https://ik.imagekit.io/your_id/tr:n-ik_ml_thumbnail/ad-images/campaign/saas_A.png",
+      "file_id": "mno345",
       "mime_type": "image/png",
       "prompt_used": "Create a professional business image...",
       "visual_approach": "Diverse team collaboration around conference table, modern office, professional blue tones, wide angle emphasizing teamwork",
@@ -183,7 +193,9 @@ for headline. Focus on leadership and results.
     },
     {
       "variation_id": "B",
-      "image_data": "[base64_encoded_image]",
+      "image_url": "https://ik.imagekit.io/your_id/ad-images/campaign/saas_B.png",
+      "thumbnail_url": "https://ik.imagekit.io/your_id/tr:n-ik_ml_thumbnail/ad-images/campaign/saas_B.png",
+      "file_id": "pqr678",
       "mime_type": "image/png",
       "prompt_used": "Create a professional business image...",
       "visual_approach": "Confident female project manager presenting success metrics, modern boardroom, navy and green accents, leadership focus",

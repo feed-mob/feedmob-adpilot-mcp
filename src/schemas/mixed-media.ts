@@ -18,7 +18,8 @@ export type AdCopyUsed = z.infer<typeof AdCopyUsedSchema>;
  */
 export const MixedMediaResultSchema = z.object({
   generated_at: z.string().datetime('Generated timestamp must be ISO datetime'),
-  composite_image_data: z.string().min(1, 'Composite image data must not be empty'),  // base64 encoded
+  composite_image_url: z.string().url('Composite image URL must be a valid URL'),
+  thumbnail_url: z.string().url().nullable().optional(),
   mime_type: z.string().regex(
     /^image\/(png|jpeg|webp)$/,
     'Mime type must be image/png, image/jpeg, or image/webp'

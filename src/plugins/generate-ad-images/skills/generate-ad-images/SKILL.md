@@ -93,7 +93,9 @@ Return this exact structure:
   "variations": [
     {
       "variation_id": "A",
-      "image_data": "base64 from script",
+      "image_url": "URL from script output",
+      "thumbnail_url": "thumbnail URL from script or null",
+      "file_id": "file ID from script or null",
       "mime_type": "image/png",
       "prompt_used": "prompt used",
       "visual_approach": "description of approach",
@@ -101,7 +103,9 @@ Return this exact structure:
     },
     {
       "variation_id": "B",
-      "image_data": "base64 from script",
+      "image_url": "URL from script output",
+      "thumbnail_url": "thumbnail URL from script or null",
+      "file_id": "file ID from script or null",
       "mime_type": "image/png",
       "prompt_used": "prompt used",
       "visual_approach": "description of approach",

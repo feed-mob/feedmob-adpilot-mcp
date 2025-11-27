@@ -277,7 +277,7 @@ export function createMixedMediaUI(result: MixedMediaResult) {
           <div class="composite-wrapper">
             <img 
               class="composite-image" 
-              src="data:${result.mime_type};base64,${result.composite_image_data}" 
+              src="${result.composite_image_url}" 
               alt="Mixed Media Creative"
             />
             <div class="copy-overlay">
@@ -332,17 +332,17 @@ export function createMixedMediaUI(result: MixedMediaResult) {
     <script>
       function downloadPNG() {
         const link = document.createElement('a');
-        link.href = 'data:${result.mime_type};base64,${result.composite_image_data}';
+        link.href = '${result.composite_image_url}';
         link.download = 'ad-creative-${result.platform}-${Date.now()}.png';
+        link.target = '_blank';
         link.click();
       }
 
       function downloadJPEG() {
-        // For JPEG, we'd need to convert the image
-        // For now, just download as-is
         const link = document.createElement('a');
-        link.href = 'data:${result.mime_type};base64,${result.composite_image_data}';
+        link.href = '${result.composite_image_url}';
         link.download = 'ad-creative-${result.platform}-${Date.now()}.jpg';
+        link.target = '_blank';
         link.click();
       }
 
