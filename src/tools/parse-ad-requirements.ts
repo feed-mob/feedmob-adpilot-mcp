@@ -44,7 +44,7 @@ Status: ${result.success ? '✓ Complete' : '⚠ Incomplete'}`;
       return {
         content: [
           {
-            type: 'text',
+            type: 'text' as const,
             text: textSummary
           },
           uiResource
@@ -80,7 +80,7 @@ Status: ${result.success ? '✓ Complete' : '⚠ Incomplete'}`;
       return {
         content: [
           {
-            type: 'text',
+            type: 'text' as const,
             text: errorMessage
           },
           errorUI

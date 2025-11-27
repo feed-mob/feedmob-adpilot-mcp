@@ -15,6 +15,20 @@
       "skills": [
         "./skills/parse-ad-requirements/SKILL.md"
       ]
+    },
+    {
+      "name": "conduct-ad-research",
+      "source": "./conduct-ad-research",
+      "version": "1.0.0",
+      "description": "Conduct comprehensive advertising research using web search",
+      "author": {
+        "name": "FeedMob",
+        "email": "dev@feedmob.com"
+      },
+      "skills": [
+        "./skills/conduct-ad-research/SKILL.md"
+      ],
+      "mcpServers": "./.mcp.json"
     }
   ]
 }

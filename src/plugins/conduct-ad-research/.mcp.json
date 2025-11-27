@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "duckduckgo": {
+      "command": "uvx",
+      "args": ["duckduckgo-mcp-server"],
+      "env": {},
+      "disabled": false
+    },
+    "tavily": {
+      "command": "uvx",
+      "args": ["tavily-mcp-server"],
+      "env": {
+        "TAVILY_API_KEY": "${TAVILY_API_KEY}"
+      },
+      "disabled": true
+    }
+  }
+}
