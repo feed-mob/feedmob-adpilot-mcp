@@ -49,7 +49,7 @@ Return a complete JSON campaign report with all required sections.`;
         options: {
           plugins: [{ type: 'local', path: pluginPath }],
           allowedTools: ['Skill', 'Read', 'WebSearch', 'mcp__duckduckgo__search', 'mcp__tavily__search'],
-          maxTurns: 20,
+          maxTurns: 100,
           env: this.buildRuntimeEnv(),
         }
       })) {

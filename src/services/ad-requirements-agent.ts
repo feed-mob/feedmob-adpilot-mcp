@@ -38,7 +38,7 @@ Return a JSON object with the extracted parameters, missing fields, and suggesti
         options: {
           plugins: [{ type: 'local', path: pluginPath }],
           allowedTools: ['Skill', 'Read'],
-          maxTurns: 10,
+          maxTurns: 50,
         }
       })) {
         if (message.type === 'assistant') {

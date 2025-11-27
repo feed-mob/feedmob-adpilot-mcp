@@ -34,35 +34,26 @@ export class AdImagesAgent {
       const researchContext = research ? this.buildResearchContext(research) : '';
       const dimensionsInfo = this.getPlatformDimensions(params.platform);
       
-      const prompt = `Use the "generate-ad-images" skill to generate two distinct image variations based on these campaign parameters:
+      const prompt = `Generate two ad images for this campaign:
 
 ${campaignContext}
-
-${researchContext}
-
+${researchContext ? `\n${researchContext}\n` : ''}
 ${dimensionsInfo}
 
-Generate two distinct, visually different image variations. Each variation should:
-- Have a different visual approach, composition, or style
-- Be optimized for the target platform
-- Align with the creative direction and audience insights
-- Leave space for text overlays (headlines, body copy, CTAs)
-- Avoid including text, logos, or copyrighted elements
+Use the generate-ad-images skill. Run the Python script at scripts/generate_image.py twice with different prompts to create two distinct image variations (A and B).
 
-Ensure the variations are genuinely different, not just minor variations.
-
-Return a complete JSON object with both variations and your recommendation.`;
+Return a JSON object with the AdImagesResult schema containing both variations.`;
 
       const assistantSnippets: string[] = [];
       let resultMessage: SDKResultMessage | undefined;
 
-      // Run the agent with plugin
+      // Run the agent with plugin - increased turns for image generation
       for await (const message of query({
         prompt,
         options: {
           plugins: [{ type: 'local', path: pluginPath }],
           allowedTools: ['Skill', 'Read', 'Bash'],
-          maxTurns: 15,
+          maxTurns: 100,
           env: this.buildRuntimeEnv(),
         }
       })) {
