@@ -81,39 +81,39 @@ Analyze both variations and recommend one based on:
 
 ### Step 8: Return JSON Output
 
-**CRITICAL**: Return a raw JSON object (NOT in a code block). The output must be valid JSON that can be parsed directly.
+**CRITICAL**: Return a raw JSON object as plain text (NOT wrapped in markdown code blocks like \`\`\`json). The output must be valid JSON that can be parsed directly by the calling service.
 
 Return this exact structure:
 
 {
-  "generated_at": "ISO timestamp",
+  "generated_at": "ISO timestamp (e.g., 2024-01-15T10:30:00Z)",
   "campaign_name": "name or null",
-  "platform": "platform name",
+  "platform": "platform name (lowercase, e.g., tiktok, instagram_feed)",
   "target_audience": "audience description",
   "variations": [
     {
       "variation_id": "A",
-      "image_url": "URL from script output",
+      "image_url": "URL from script output (required)",
       "thumbnail_url": "thumbnail URL from script or null",
       "file_id": "file ID from script or null",
-      "mime_type": "image/png",
-      "prompt_used": "prompt used",
-      "visual_approach": "description of approach",
+      "mime_type": "image/png or image/jpeg",
+      "prompt_used": "full prompt used for generation",
+      "visual_approach": "brief description of visual approach (1-2 sentences)",
       "dimensions": { "width": 1080, "height": 1920 }
     },
     {
       "variation_id": "B",
-      "image_url": "URL from script output",
+      "image_url": "URL from script output (required)",
       "thumbnail_url": "thumbnail URL from script or null",
       "file_id": "file ID from script or null",
-      "mime_type": "image/png",
-      "prompt_used": "prompt used",
-      "visual_approach": "description of approach",
+      "mime_type": "image/png or image/jpeg",
+      "prompt_used": "full prompt used for generation",
+      "visual_approach": "brief description of visual approach (1-2 sentences)",
       "dimensions": { "width": 1080, "height": 1920 }
     }
   ],
   "recommended_variation": "A or B",
-  "recommendation_rationale": "why this variation is recommended"
+  "recommendation_rationale": "2-3 sentences explaining why this variation is recommended based on campaign goals, platform best practices, and audience appeal"
 }
 
 ## References
