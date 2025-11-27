@@ -1,0 +1,167 @@
+# Implementation Plan
+
+- [x] 1. Create ad images schemas and types
+  - [x] 1.1 Create `src/schemas/ad-images.ts` with Zod schemas
+    - Define `ImageVariationSchema` with image_data (base64), mime_type, variation_id, prompt_used, visual_approach, dimensions
+    - Define `AdImagesResultSchema` with variations array (length 2), recommended_variation, recommendation_rationale
+    - Define `GenerateAdImagesInputSchema` accepting campaignParameters and optional campaignReport
+    - Define `PLATFORM_DIMENSIONS` constant with platform-specific width/height
+    - Export TypeScript types from schemas
+    - _Requirements: 6.1, 6.2, 6.3_
+  - [ ]* 1.2 Write property test for schema validation
+    - **Property 2: Schema Validation Completeness**
+    - **Validates: Requirements 6.1, 6.2, 6.3**
+  - [ ]* 1.3 Write property test for JSON round-trip
+    - **Property 3: JSON Round-Trip Consistency**
+    - **Validates: Requirements 6.4**
+
+- [x] 2. Create mixed media schemas and types
+  - [x] 2.1 Create `src/schemas/mixed-media.ts` with Zod schemas
+    - Define `MixedMediaResultSchema` with composite_image_data, mime_type, platform, dimensions, source_image_variation, ad_copy_used
+    - Define `GenerateMixedMediaInputSchema` accepting selectedImage, adCopy, platform
+    - Export TypeScript types from schemas
+    - _Requirements: 7.1, 7.2, 7.3_
+
+- [x] 3. Create generate-ad-images skill plugin with Python script
+  - [x] 3.1 Create plugin directory structure
+    - Create `src/plugins/generate-ad-images/skills/generate-ad-images/SKILL.md`
+    - Define skill name and description in frontmatter
+    - Document workflow for generating two distinct image variations
+    - Include examples with input/output format
+    - _Requirements: 1.1, 1.2, 1.4, 2.1, 2.2, 2.3_
+  - [x] 3.2 Create Python script for Gemini image generation
+    - Create `src/plugins/generate-ad-images/skills/generate-ad-images/scripts/generate_image.py`
+    - Implement `generate_image(prompt)` function using google.genai.Client
+    - Return JSON with image_data (base64) and mime_type
+    - Handle errors and return appropriate error messages
+    - _Requirements: 1.3, 9.1, 9.2, 9.3, 9.4_
+  - [x] 3.3 Create requirements.txt for Python dependencies
+    - Create `src/plugins/generate-ad-images/skills/generate-ad-images/scripts/requirements.txt`
+    - Include google-generativeai package
+    - _Requirements: 9.1_
+
+- [x] 4. Create ad images agent service
+  - [x] 4.1 Create `src/services/ad-images-agent.ts`
+    - Implement `AdImagesAgent` class with `generateImages` method
+    - Resolve plugin path for generate-ad-images skill
+    - Build image generation prompts from campaign context and research
+    - Execute Python script for Gemini API calls
+    - Parse and validate JSON response against schema
+    - Handle agent errors with appropriate error types
+    - _Requirements: 1.1, 1.4, 2.1, 2.2, 2.3_
+  - [ ]* 4.2 Write property test for two distinct variations
+    - **Property 1: Two Distinct Variations**
+    - **Validates: Requirements 1.1, 1.2**
+
+- [x] 5. Create ad images UI factory
+  - [x] 5.1 Create `src/utils/ad-images-ui.ts` with result UI
+    - Implement `createAdImagesUI` function
+    - Generate side-by-side image comparison layout
+    - Display images with Variation A and Variation B labels
+    - Add selection buttons with postMessage tool calls
+    - Add regenerate button
+    - Highlight recommended variation
+    - Include design system CSS variables with dark mode support
+    - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
+  - [x] 5.2 Add error UI function
+    - Implement `createAdImagesErrorUI` function
+    - Support validation, api, timeout, and unknown error types
+    - Include retry button for non-validation errors
+    - _Requirements: 5.1, 5.2, 5.3, 5.4_
+  - [ ]* 5.3 Write property test for UI structure
+    - **Property 4: Image UI Structure Completeness**
+    - **Validates: Requirements 3.1, 3.2, 3.3, 3.4, 3.5**
+  - [ ]* 5.4 Write property test for error UI generation
+    - **Property 7: Error UI Generation**
+    - **Validates: Requirements 5.4**
+
+- [x] 6. Create generateAdImages MCP tool
+  - [x] 6.1 Create `src/tools/generate-ad-images.ts`
+    - Define tool name, description, and parameters
+    - Validate input using Zod schema
+    - Call agent service to generate images
+    - Generate text summary with visual approach descriptions and recommendation
+    - Return text summary and UIResource
+    - Handle errors with categorization (validation, api, timeout, unknown)
+    - _Requirements: 1.1, 4.1, 4.2, 4.3, 5.1, 5.2, 5.3_
+  - [ ]* 6.2 Write property test for text summary completeness
+    - **Property 5: Text Summary Completeness**
+    - **Validates: Requirements 4.1, 4.2, 4.3**
+  - [ ]* 6.3 Write property test for validation error handling
+    - **Property 6: Validation Error Handling**
+    - **Validates: Requirements 5.1**
+
+- [x] 7. Register generateAdImages tool with FastMCP server
+  - [x] 7.1 Update `src/index.ts` to import and register generateAdImagesTool
+    - Import generateAdImagesTool from tools
+    - Add tool to server using server.addTool()
+    - _Requirements: 1.1_
+
+- [x] 8. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 9. Create mixed media agent service
+  - [x] 9.1 Create `src/services/mixed-media-agent.ts`
+    - Implement `MixedMediaAgent` class with `generateComposite` method
+    - Combine selected image with ad copy text overlay
+    - Apply platform-specific dimensions and layout
+    - Return composite image data
+    - _Requirements: 7.1, 7.2, 7.3_
+  - [ ]* 9.2 Write property test for composite generation
+    - **Property 8: Mixed Media Composite Generation**
+    - **Validates: Requirements 7.1, 7.2, 7.3**
+  - [ ]* 9.3 Write property test for platform dimensions
+    - **Property 10: Platform-Specific Dimensions**
+    - **Validates: Requirements 2.1, 8.4**
+
+- [x] 10. Create mixed media UI factory
+  - [x] 10.1 Create `src/utils/mixed-media-ui.ts` with result UI
+    - Implement `createMixedMediaUI` function
+    - Display composite image preview
+    - Add download/export buttons (PNG, JPEG)
+    - Add regeneration options (different copy, different image)
+    - Format preview to platform dimensions
+    - Include design system CSS variables with dark mode support
+    - _Requirements: 7.4, 8.1, 8.2, 8.3, 8.4_
+  - [x] 10.2 Add error UI function
+    - Implement `createMixedMediaErrorUI` function
+    - Support validation, generation, and unknown error types
+    - Include retry button for non-validation errors
+    - _Requirements: 5.4_
+  - [ ]* 10.3 Write property test for mixed media UI structure
+    - **Property 9: Mixed Media UI Completeness**
+    - **Validates: Requirements 7.4, 8.1, 8.2, 8.3**
+
+- [x] 11. Create generateMixedMediaCreative MCP tool
+  - [x] 11.1 Create `src/tools/generate-mixed-media.ts`
+    - Define tool name, description, and parameters
+    - Validate input using Zod schema
+    - Call agent service to generate composite
+    - Generate text summary with composite details
+    - Return text summary and UIResource
+    - Handle errors with categorization
+    - _Requirements: 7.1, 7.4, 8.1, 8.2, 8.3_
+
+- [x] 12. Register generateMixedMediaCreative tool with FastMCP server
+  - [x] 12.1 Update `src/index.ts` to import and register generateMixedMediaCreativeTool
+    - Import generateMixedMediaCreativeTool from tools
+    - Add tool to server using server.addTool()
+    - _Requirements: 7.1_
+
+- [x] 13. Integration and wiring
+  - [x] 13.1 Update ad-copy-ui.ts to call generateAdImages
+    - Add "Generate Ad Images →" button to ad copy selection UI
+    - Pass campaign parameters and selected ad copy to generateAdImages tool
+    - _Requirements: 1.4_
+  - [x] 13.2 Update ad-images-ui.ts to call generateMixedMediaCreative
+    - Ensure selection buttons pass selected image and ad copy to generateMixedMediaCreative tool
+    - _Requirements: 7.1_
+  - [ ]* 13.3 Write unit tests for tool integration
+    - Test generateAdImages tool execution with valid campaign parameters
+    - Test generateMixedMediaCreative tool execution with valid inputs
+    - Test error handling for invalid inputs
+    - _Requirements: 1.1, 7.1, 5.1_
+
+- [x] 14. Final Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+

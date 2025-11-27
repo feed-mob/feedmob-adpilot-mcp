@@ -105,15 +105,27 @@ The research agent should:
 
 ### 4. Generate Ad Images
 
-- Generate image creatives for the campaign.
-- Display generated visuals using `mcp-ui`.
+- Generate **two image variations** for the campaign based on research insights and campaign parameters.
+- Present both options to the user through `mcp-ui` interactive components.
+- Allow user to:
+  - Preview both image variations side-by-side
+  - Select their preferred image
+  - Request regeneration if neither option is suitable
+- Display generated visuals using `mcp-ui` with interactive selection controls.
 
 ------
 
 ### 5. Generate Mixed Media Creatives (Image + Copy)
 
-- If supported, produce ad assets combining text and images.
-- Display using `mcp-ui` composite components.
+- After user selects their preferred image from step 4, use a **separate tool** to combine:
+  - The selected image
+  - The generated ad copy from step 3
+  - Platform-specific formatting and layout
+- Display the final composite ad creative through `mcp-ui` with:
+  - Preview of the complete ad as it would appear on the target platform
+  - Download/export options
+  - Option to regenerate with different copy or image variations
+- Support multiple ad formats (feed posts, stories, video thumbnails, etc.) based on platform requirements.
 
 ------
 

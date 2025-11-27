@@ -1,0 +1,7 @@
+# Python dependencies for generate-ad-images skill
+
+# Google Generative AI SDK for Gemini API
+google-genai>=1.32.0
+
+# PIL for image processing
+Pillow>=10.0.0

@@ -190,6 +190,7 @@ export function createAdCopyUI(result: AdCopyResult) {
         padding: 20px;
         border-radius: 10px;
         border-left: 4px solid var(--accent-orange);
+        margin-bottom: 20px;
       }
       .disclaimer-title {
         font-size: 16px;
@@ -201,6 +202,40 @@ export function createAdCopyUI(result: AdCopyResult) {
         font-size: 14px;
         line-height: 1.6;
         color: var(--text-secondary);
+      }
+      .next-steps-section {
+        text-align: center;
+        padding: 30px 20px;
+        background: var(--bg-primary);
+        border-radius: 10px;
+        border: 2px dashed var(--accent-blue);
+      }
+      .next-steps-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: var(--text-primary);
+      }
+      .next-step-button {
+        background: var(--accent-blue);
+        color: white;
+        border: none;
+        padding: 14px 32px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .next-step-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 120, 255, 0.3);
+      }
+      .next-step-button:active {
+        transform: translateY(0);
       }
     </style>
     <div class="ad-copy-container">
@@ -287,6 +322,13 @@ export function createAdCopyUI(result: AdCopyResult) {
         <div class="disclaimer-title">⚖️ Copyright & Usage Disclaimer</div>
         <div class="disclaimer-text">${disclaimer}</div>
       </div>
+
+      <div class="next-steps-section">
+        <div class="next-steps-title">🚀 Next Steps</div>
+        <button class="next-step-button" onclick="handleGenerateImages()">
+          🖼️ Generate Ad Images →
+        </button>
+      </div>
     </div>
     <script>
       function handleSelectVariation(variationId) {
@@ -303,6 +345,22 @@ export function createAdCopyUI(result: AdCopyResult) {
               adCopy: selectedVariation,
               campaignName: ${JSON.stringify(result.campaign_name)},
               platform: ${JSON.stringify(result.platform)}
+            }
+          }
+        }, '*');
+      }
+
+      function handleGenerateImages() {
+        window.parent.postMessage({
+          type: 'tool',
+          payload: {
+            toolName: 'generateAdImages',
+            params: {
+              campaignParameters: {
+                campaign_name: ${JSON.stringify(result.campaign_name)},
+                platform: ${JSON.stringify(result.platform)},
+                target_audience: ${JSON.stringify(result.target_audience)}
+              }
             }
           }
         }, '*');
