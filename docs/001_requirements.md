@@ -59,21 +59,58 @@ The AI should:
 
 ------
 
-### 2. Generate Ad Copy
+### 2. Conduct Ad Research
+
+After parsing campaign requirements, the system performs comprehensive research to support ad strategy:
+
+- **Target Audience Analysis**
+  - Demographics, psychographics, and behavioral patterns
+  - Platform-specific user preferences and engagement trends
+  - Competitor audience insights
+
+- **Platform Research**
+  - Current advertising trends on the target platform (TikTok, Facebook, Instagram, etc.)
+  - Best-performing ad formats and content types
+  - Platform-specific guidelines and optimization tips
+
+- **Market & Industry Insights**
+  - Industry benchmarks (CTR, CPC, conversion rates)
+  - Seasonal trends and timing recommendations
+  - Emerging content themes and creative approaches
+
+- **Competitive Analysis**
+  - Competitor ad strategies and messaging
+  - Successful campaign examples in the same niche
+  - Differentiation opportunities
+
+The research agent should:
+- Use `exa` MCP for web search and content discovery
+- Leverage `claude-agent-sdk` with DeepResearch capabilities
+- Aggregate findings into actionable insights
+- Display research results through `mcp-ui` interactive components with:
+  - Collapsible sections for different research areas
+  - Visual data representations (charts, comparisons)
+  - Key takeaways and recommendations
+  - Source citations and links
+
+------
+
+### 3. Generate Ad Copy
 
 - Produce high-quality advertising text (headlines, CTAs, body text).
+- Informed by research insights from the previous step.
 - Present results through `mcp-ui` interactive components.
 
 ------
 
-### 3. Generate Ad Images
+### 4. Generate Ad Images
 
 - Generate image creatives for the campaign.
 - Display generated visuals using `mcp-ui`.
 
 ------
 
-### 4. Generate Mixed Media Creatives (Image + Copy)
+### 5. Generate Mixed Media Creatives (Image + Copy)
 
 - If supported, produce ad assets combining text and images.
 - Display using `mcp-ui` composite components.
