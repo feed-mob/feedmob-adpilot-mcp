@@ -33,10 +33,7 @@ The project uses `dotenv` to load environment variables from a `.env` file:
    cp .env.example .env
    ```
 
-2. Edit `.env` and add your API key:
-   ```bash
-   ANTHROPIC_API_KEY=sk-ant-api03-your-actual-key-here
-   ```
+2. Edit `.env` if needed for any API keys.
 
 3. The `.env` file is automatically loaded when the server starts
 
@@ -52,13 +49,9 @@ The agent tries these paths in order:
 
 The Claude Agent SDK requires authentication to work properly. You have two options:
 
-#### Option 1: Anthropic API Key
+#### Authentication
 
-Set the `ANTHROPIC_API_KEY` environment variable:
-
-```bash
-export ANTHROPIC_API_KEY=sk-ant-api03-...
-```
+The Claude Agent SDK handles authentication automatically.
 
 #### Option 2: Claude Code CLI Login
 
@@ -114,7 +107,7 @@ console.log(result);
 
 **Cause**: Claude Agent SDK cannot authenticate
 
-**Solution**: Set `ANTHROPIC_API_KEY` or run `npx @anthropic-ai/claude-code login`
+**Solution**: Run `npx @anthropic-ai/claude-code login`
 
 ### "Plugin not found" Warning
 

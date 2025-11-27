@@ -160,7 +160,6 @@ Create a `.env` file:
 
 ```bash
 # Optional: Add any API keys for enhanced research capabilities
-# ANTHROPIC_API_KEY=your_key_here
 ```
 
 ## Testing

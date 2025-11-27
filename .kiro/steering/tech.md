@@ -112,7 +112,6 @@ PostgreSQL runs in Docker via `docker-compose.yaml`:
 
 Required configuration in `.env`:
 - `DATABASE_URL` - PostgreSQL connection string
-- `ANTHROPIC_API_KEY` - Claude API key
 - `GOOGLE_CLIENT_ID` - OAuth client ID
 - `GOOGLE_CLIENT_SECRET` - OAuth secret
 - `GOOGLE_CALLBACK_URL` - OAuth redirect URI

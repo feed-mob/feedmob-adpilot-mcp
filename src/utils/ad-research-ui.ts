@@ -1,10 +1,11 @@
 import { createUIResource } from '@mcp-ui/server';
 import { CampaignReport } from '../schemas/ad-research.js';
+import { CampaignParameters } from '../schemas/campaign-params.js';
 
 /**
  * Creates a UIResource displaying comprehensive campaign research report
  */
-export function createResearchReportUI(report: CampaignReport) {
+export function createResearchReportUI(report: CampaignReport, campaignParameters?: CampaignParameters) {
   const { executive_summary, audience_insights, platform_strategy, creative_direction, 
           budget_allocation, performance_metrics, implementation_timeline, sources } = report;
 
@@ -665,7 +666,10 @@ export function createResearchReportUI(report: CampaignReport) {
           type: 'tool',
           payload: {
             toolName: 'generateAdCopy',
-            params: ${JSON.stringify({ campaignReport: report })}
+            params: {
+              campaignParameters: ${JSON.stringify(campaignParameters || {})},
+              campaignReport: ${JSON.stringify(report)}
+            }
           }
         }, '*');
       }

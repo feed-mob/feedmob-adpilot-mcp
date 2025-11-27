@@ -5,6 +5,7 @@ import { buttonTool } from './tools/button.js';
 import { counterTool } from './tools/counter.js';
 import { parseAdRequirementsTool } from './tools/parse-ad-requirements.js';
 import { conductAdResearchTool } from './tools/conduct-ad-research.js';
+import { generateAdCopyTool } from './tools/generate-ad-copy.js';
 
 // Initialize FastMCP server
 const server = new FastMCP({
@@ -18,8 +19,9 @@ server.addTool(buttonTool);
 server.addTool(counterTool);
 server.addTool(parseAdRequirementsTool);
 server.addTool(conductAdResearchTool);
+server.addTool(generateAdCopyTool);
 
-console.log('✅ Registered tools: greet, button, counter, parseAdRequirements, conductAdResearch');
+console.log('✅ Registered tools: greet, button, counter, parseAdRequirements, conductAdResearch, generateAdCopy');
 
 // Start server with HTTP streaming transport
 server.start({

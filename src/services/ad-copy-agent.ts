@@ -2,54 +2,62 @@ import { resolve, dirname } from 'path';
 import { existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { query, type SDKMessage, type SDKResultMessage } from '@anthropic-ai/claude-agent-sdk';
-import { CampaignReport, CampaignReportSchema } from '../schemas/ad-research.js';
+import { AdCopyResult, AdCopyResultSchema } from '../schemas/ad-copy.js';
 import { CampaignParameters } from '../schemas/campaign-params.js';
+import { CampaignReport } from '../schemas/ad-research.js';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 /**
- * Service for interacting with Claude Agent SDK to conduct advertising research
+ * Service for interacting with Claude Agent SDK to generate ad copy
  */
-export class AdResearchAgent {
+export class AdCopyAgent {
   /**
-   * Conduct comprehensive advertising research based on campaign parameters
+   * Generate two distinct ad copy variations based on campaign parameters
    * 
    * @param params - Campaign parameters from requirements parsing
-   * @returns CampaignReport with research findings and recommendations
+   * @param research - Optional campaign research report with insights
+   * @returns AdCopyResult with two variations and recommendation
    * @throws Error if agent call fails or response cannot be parsed
    */
-  async conductResearch(params: CampaignParameters): Promise<CampaignReport> {
+  async generateCopy(
+    params: CampaignParameters,
+    research?: CampaignReport
+  ): Promise<AdCopyResult> {
     try {
       const pluginPath = this.resolvePluginPath();
       
       // Build campaign context for the prompt
       const campaignContext = this.buildCampaignContext(params);
+      const researchContext = research ? this.buildResearchContext(research) : '';
       
-      const prompt = `Use the "conduct-ad-research" skill to conduct comprehensive advertising research based on these confirmed campaign parameters:
+      const prompt = `Use the "generate-ad-copy" skill to generate two distinct ad copy variations based on these campaign parameters:
 
 ${campaignContext}
 
-Use available web search tools (DuckDuckGo or Tavily) to research:
-1. Target audience demographics and behaviors
-2. Platform-specific trends and best practices
-3. Competitor strategies and successful examples
-4. Industry benchmarks for the specified KPIs
-5. Creative direction and format recommendations
+${researchContext}
 
-Return a complete JSON campaign report with all required sections.`;
+Generate two distinct, creative, and copyright-compliant ad copy variations. Each variation should include:
+- A compelling headline
+- Engaging body copy
+- A clear call-to-action
+
+Ensure the variations are genuinely different in messaging approach, not just minor rewording.
+
+Return a complete JSON object with both variations and your recommendation.`;
 
       const assistantSnippets: string[] = [];
       let resultMessage: SDKResultMessage | undefined;
 
-      // Run the agent with plugin and web search tools
+      // Run the agent with plugin
       for await (const message of query({
         prompt,
         options: {
           plugins: [{ type: 'local', path: pluginPath }],
-          allowedTools: ['Skill', 'Read', 'WebSearch', 'mcp__duckduckgo__search', 'mcp__tavily__search'],
-          maxTurns: 20,
+          allowedTools: ['Skill', 'Read'],
+          maxTurns: 10,
           env: this.buildRuntimeEnv(),
         }
       })) {
@@ -86,12 +94,12 @@ Return a complete JSON campaign report with all required sections.`;
       const parsedResult = JSON.parse(jsonMatch[0]);
       
       // Validate against schema
-      const validatedResult = CampaignReportSchema.parse(parsedResult);
+      const validatedResult = AdCopyResultSchema.parse(parsedResult);
       
       return validatedResult;
     } catch (error) {
-      console.error('Error in conductResearch:', error);
-      throw new Error(`Failed to conduct research: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Error in generateCopy:', error);
+      throw new Error(`Failed to generate ad copy: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -118,18 +126,41 @@ Return a complete JSON campaign report with all required sections.`;
   }
 
   /**
+   * Build research context string from campaign report
+   */
+  private buildResearchContext(research: CampaignReport): string {
+    const lines: string[] = ['Research Insights:'];
+    
+    // Audience insights
+    lines.push('\nAudience Insights:');
+    lines.push(`- Demographics: ${research.audience_insights.demographics}`);
+    lines.push(`- Behaviors: ${research.audience_insights.behaviors}`);
+    lines.push(`- Preferences: ${research.audience_insights.preferences}`);
+    
+    // Creative direction from research
+    lines.push('\nCreative Direction:');
+    lines.push(`- Tone & Style: ${research.creative_direction.tone_and_style}`);
+    lines.push(`- Format Recommendations: ${research.creative_direction.format_recommendations}`);
+    
+    // Platform strategy (first platform if multiple)
+    if (research.platform_strategy.length > 0) {
+      const primaryPlatform = research.platform_strategy[0];
+      lines.push('\nPlatform Best Practices:');
+      lines.push(`- Trends: ${primaryPlatform.trends}`);
+      lines.push(`- Best Practices: ${primaryPlatform.best_practices}`);
+    }
+    
+    return lines.join('\n');
+  }
+
+  /**
    * Build runtime environment for the agent
-   * Passes through necessary environment variables for MCP tools and Claude SDK
+   * Passes through necessary environment variables for Claude SDK
    */
   private buildRuntimeEnv(): NodeJS.ProcessEnv {
     const baseEnv = { ...process.env };
 
-    return {
-      ...baseEnv,
-      
-      // MCP tool API keys (if available)
-      ...(baseEnv.TAVILY_API_KEY && { TAVILY_API_KEY: baseEnv.TAVILY_API_KEY }),
-    };
+    return baseEnv;
   }
 
   /**
@@ -166,23 +197,23 @@ Return a complete JSON campaign report with all required sections.`;
   }
 
   /**
-   * Resolve the path to the conduct-ad-research plugin
+   * Resolve the path to the generate-ad-copy plugin
    */
   private resolvePluginPath(): string {
-    // Primary path: src/plugins/conduct-ad-research
-    const pluginPath = resolve(__dirname, '..', 'plugins', 'conduct-ad-research');
+    // Primary path: src/plugins/generate-ad-copy
+    const pluginPath = resolve(__dirname, '..', 'plugins', 'generate-ad-copy');
     
     // Check if plugin exists with valid manifest
     if (existsSync(pluginPath)) {
-      const manifestPath = resolve(pluginPath, 'skills', 'conduct-ad-research', 'SKILL.md');
+      const manifestPath = resolve(pluginPath, 'skills', 'generate-ad-copy', 'SKILL.md');
       if (existsSync(manifestPath)) {
-        console.log(`✅ Found conduct-ad-research plugin at: ${pluginPath}`);
+        console.log(`✅ Found generate-ad-copy plugin at: ${pluginPath}`);
         return pluginPath;
       }
     }
 
     throw new Error(
-      `conduct-ad-research plugin not found at expected location: ${pluginPath}. Expected structure: src/plugins/conduct-ad-research/skills/conduct-ad-research/SKILL.md`
+      `generate-ad-copy plugin not found at expected location: ${pluginPath}. Expected structure: src/plugins/generate-ad-copy/skills/generate-ad-copy/SKILL.md`
     );
   }
 }
@@ -190,4 +221,5 @@ Return a complete JSON campaign report with all required sections.`;
 /**
  * Singleton instance of the agent service
  */
-export const adResearchAgent = new AdResearchAgent();
+export const adCopyAgent = new AdCopyAgent();
+

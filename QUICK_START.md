@@ -17,7 +17,7 @@ cp .env.example .env
 Edit `.env` and add your Anthropic API key:
 
 ```env
-ANTHROPIC_API_KEY=sk-ant-...
+# Add any required API keys here
 ```
 
 ### 3. Start the Server
@@ -98,13 +98,6 @@ The tool returns an interactive mcp-ui component showing:
 Make sure the `skills/parse-ad-requirements.md` file exists:
 ```bash
 ls skills/parse-ad-requirements.md
-```
-
-### "ANTHROPIC_API_KEY not set"
-
-Check your `.env` file:
-```bash
-cat .env | grep ANTHROPIC_API_KEY
 ```
 
 ### TypeScript Errors

@@ -25,7 +25,7 @@ export const conductAdResearchTool = {
       const report = await adResearchAgent.conductResearch(validated.campaignParameters);
       
       // Generate UI for the result
-      const uiResource = createResearchReportUI(report);
+      const uiResource = createResearchReportUI(report, validated.campaignParameters);
       
       // Create text summary for the LLM
       const textSummary = `Campaign Research Report Generated:
