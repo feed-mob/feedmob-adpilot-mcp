@@ -31,8 +31,3 @@ server.start({
 });
 
 console.log('🚀 FeedMob AdPilot MCP Server started');
-console.log('📍 MCP endpoint: http://localhost:8080/mcp');
-console.log('📍 SSE endpoint: http://localhost:8080/sse');
-console.log('📍 Health check: http://localhost:8080/ready');
-console.log('');
-console.log('💡 Test with: npx fastmcp inspect src/index.ts');
