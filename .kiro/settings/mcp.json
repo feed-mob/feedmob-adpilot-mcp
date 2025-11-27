@@ -37,7 +37,11 @@
         "-y",
         "@modelcontextprotocol/server-sequential-thinking"
       ],
-      "disabled": false
+      "disabled": false,
+      "autoApprove": [
+        "sequentialthinking",
+        "sequentialthinking"
+      ]
     },
     "mcp-ui-docs": {
       "url": "https://gitmcp.io/idosal/mcp-ui",
