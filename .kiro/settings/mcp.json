@@ -54,7 +54,10 @@
       "env": {
         "SKILL_FOLDER": "./.kiro/settings/skills"
       },
-      "disabled": false
+      "disabled": false,
+      "autoApprove": [
+        "get_skill_skill-creator"
+      ]
     }
   }
 }
