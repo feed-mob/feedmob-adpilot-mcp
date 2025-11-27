@@ -1,8 +1,5 @@
 import 'dotenv/config';
 import { FastMCP } from 'fastmcp';
-import { greetingTool } from './tools/greeting.js';
-import { buttonTool } from './tools/button.js';
-import { counterTool } from './tools/counter.js';
 import { parseAdRequirementsTool } from './tools/parse-ad-requirements.js';
 import { conductAdResearchTool } from './tools/conduct-ad-research.js';
 import { generateAdCopyTool } from './tools/generate-ad-copy.js';
@@ -16,16 +13,13 @@ const server = new FastMCP({
 });
 
 // Register tools
-server.addTool(greetingTool);
-server.addTool(buttonTool);
-server.addTool(counterTool);
 server.addTool(parseAdRequirementsTool);
 server.addTool(conductAdResearchTool);
 server.addTool(generateAdCopyTool);
 server.addTool(generateAdImagesTool);
 server.addTool(generateMixedMediaCreativeTool);
 
-console.log('✅ Registered tools: greet, button, counter, parseAdRequirements, conductAdResearch, generateAdCopy, generateAdImages, generateMixedMediaCreative');
+console.log('✅ Registered tools: parseAdRequirements, conductAdResearch, generateAdCopy, generateAdImages, generateMixedMediaCreative');
 
 // Start server with HTTP streaming transport
 server.start({

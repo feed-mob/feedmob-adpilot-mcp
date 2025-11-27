@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- Source lives in `src/` with the FastMCP entry at `src/index.ts`; tools in `src/tools/` (`greeting.ts`, `button.ts`, `counter.ts`); UI helpers in `src/utils/ui-factory.ts`.
+- Source lives in `src/` with the FastMCP entry at `src/index.ts`; tools in `src/tools/` (ad requirements parsing, research, copy generation, image generation, mixed media); UI helpers in `src/utils/` (ad-requirements-ui, ad-research-ui, ad-copy-ui, ad-images-ui, mixed-media-ui).
 - Tests split into `tests/unit/` and `tests/properties/`; build artifacts land in `dist/`.
 - `docker-compose.yaml` provisions local Postgres; optional for the demo server.
 

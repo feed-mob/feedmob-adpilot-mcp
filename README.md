@@ -114,13 +114,17 @@ npm run typecheck
 │   ├── services/
 │   │   └── ad-requirements-agent.ts # Claude Agent SDK integration
 │   ├── tools/
-│   │   ├── parse-ad-requirements.ts # Main parsing tool
-│   │   ├── greeting.ts             # Demo greeting tool
-│   │   ├── button.ts               # Demo button tool
-│   │   └── counter.ts              # Demo counter tool
+│   │   ├── parse-ad-requirements.ts # Parse campaign requirements
+│   │   ├── conduct-ad-research.ts   # Research competitors & trends
+│   │   ├── generate-ad-copy.ts      # Generate ad copy variations
+│   │   ├── generate-ad-images.ts    # Generate ad images
+│   │   └── generate-mixed-media.ts  # Generate mixed media creatives
 │   └── utils/
-│       ├── ui-factory.ts           # Demo UI components
-│       └── ad-requirements-ui.ts   # Campaign UI components
+│       ├── ad-requirements-ui.ts   # Campaign parameters UI
+│       ├── ad-research-ui.ts       # Research results UI
+│       ├── ad-copy-ui.ts           # Ad copy UI
+│       ├── ad-images-ui.ts         # Ad images UI
+│       └── mixed-media-ui.ts       # Mixed media UI
 ├── skills/
 │   └── parse-ad-requirements.md    # Agent skill instructions
 ├── tests/
@@ -146,18 +150,6 @@ Parse natural language advertising campaign requirements into structured paramet
 - Interactive mcp-ui component displaying extracted parameters
 - Visual indicators for missing fields
 - Confirmation button when all fields are complete
-
-### greet
-
-Generate a personalized greeting (demo tool).
-
-### button
-
-Handle button interactions (demo tool).
-
-### counter
-
-Interactive counter with increment/decrement (demo tool).
 
 ## MCP Endpoints
 
