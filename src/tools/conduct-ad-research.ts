@@ -10,6 +10,12 @@ export const conductAdResearchTool = {
   name: 'conductAdResearch',
   description: 'Conduct comprehensive advertising research based on confirmed campaign parameters. Uses web search tools to gather insights on target audiences, platform trends, competitor strategies, industry benchmarks, and creative best practices. Returns a structured campaign report with actionable recommendations.',
   parameters: ConductAdResearchInputSchema,
+  annotations: {
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: false,
+    openWorldHint: true
+  },
   execute: async (args: z.infer<typeof ConductAdResearchInputSchema>) => {
     try {
       // Validate input

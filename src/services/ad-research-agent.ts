@@ -50,6 +50,7 @@ Return a complete JSON campaign report with all required sections.`;
           plugins: [{ type: 'local', path: pluginPath }],
           allowedTools: ['Skill', 'Read', 'WebSearch', 'mcp__duckduckgo__search', 'mcp__tavily__search'],
           maxTurns: 20,
+          env: this.buildRuntimeEnv(),
         }
       })) {
         if (message.type === 'assistant') {
@@ -114,6 +115,26 @@ Return a complete JSON campaign report with all required sections.`;
     if (params.other_details) lines.push(`Other Details: ${params.other_details}`);
     
     return lines.join('\n');
+  }
+
+  /**
+   * Build runtime environment for the agent
+   * Passes through necessary environment variables for MCP tools and Claude SDK
+   */
+  private buildRuntimeEnv(): NodeJS.ProcessEnv {
+    const baseEnv = { ...process.env };
+    
+    // Ensure ANTHROPIC_API_KEY is available
+    if (!baseEnv.ANTHROPIC_API_KEY) {
+      throw new Error('ANTHROPIC_API_KEY environment variable is required for Claude Agent SDK');
+    }
+
+    return {
+      ...baseEnv,
+      
+      // MCP tool API keys (if available)
+      ...(baseEnv.TAVILY_API_KEY && { TAVILY_API_KEY: baseEnv.TAVILY_API_KEY }),
+    };
   }
 
   /**

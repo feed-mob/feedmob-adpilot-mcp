@@ -56,7 +56,8 @@
       },
       "disabled": false,
       "autoApprove": [
-        "get_skill_skill-creator"
+        "get_skill_skill-creator",
+        "get_skill_mcp-builder"
       ]
     }
   }

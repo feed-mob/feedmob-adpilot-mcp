@@ -10,6 +10,11 @@ export const parseAdRequirementsTool = {
   name: 'parseAdRequirements',
   description: 'Parse natural language advertising campaign requirements into structured parameters. Extracts product, audience, budget, platform, KPIs, and other campaign details.',
   parameters: ParseAdRequirementsInputSchema,
+  annotations: {
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true
+  },
   execute: async (args: z.infer<typeof ParseAdRequirementsInputSchema>) => {
     try {
       // Validate input
