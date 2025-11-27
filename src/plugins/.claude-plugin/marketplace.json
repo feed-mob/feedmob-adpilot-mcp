@@ -29,6 +29,26 @@
         "./skills/conduct-ad-research/SKILL.md"
       ],
       "mcpServers": "./.mcp.json"
+    },
+    {
+      "name": "generate-ad-images",
+      "source": "./generate-ad-images",
+      "version": "1.0.0",
+      "description": "Generate AI-powered image variations for advertising campaigns using Google Gemini",
+      "author": "FeedMob",
+      "skills": [
+        "./skills/generate-ad-images/SKILL.md"
+      ]
+    },
+    {
+      "name": "generate-ad-copy",
+      "source": "./generate-ad-copy",
+      "version": "1.0.0",
+      "description": "Generate compelling ad copy variations for advertising campaigns",
+      "author": "FeedMob",
+      "skills": [
+        "./skills/generate-ad-copy/SKILL.md"
+      ]
     }
   ]
 }

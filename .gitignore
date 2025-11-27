@@ -28,3 +28,6 @@ coverage/
 # Temporary files
 *.tmp
 .cache/
+
+# Generated plugin artifacts
+**/=1.32.0

@@ -34,15 +34,13 @@ export class AdImagesAgent {
       const researchContext = research ? this.buildResearchContext(research) : '';
       const dimensionsInfo = this.getPlatformDimensions(params.platform);
       
-      const prompt = `Generate two ad images for this campaign:
+      const prompt = `Use the generate-ad-images skill to create two ad image variations for this campaign:
 
 ${campaignContext}
 ${researchContext ? `\n${researchContext}\n` : ''}
 ${dimensionsInfo}
 
-Use the generate-ad-images skill. Run the Python script at scripts/generate_image.py twice with different prompts to create two distinct image variations (A and B).
-
-Return a JSON object with the AdImagesResult schema containing both variations.`;
+Follow the skill workflow to generate both variations using the Python script, then return the final JSON result as specified in the skill.`;
 
       const assistantSnippets: string[] = [];
       let resultMessage: SDKResultMessage | undefined;
@@ -81,10 +79,24 @@ Return a JSON object with the AdImagesResult schema containing both variations.`
       // Get the response text
       const responseText = (resultMessage.result || assistantSnippets.join('\n')).trim();
 
-      // Extract JSON from the response
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      // Debug: Log what we received
+      console.log('=== Agent Response Debug ===');
+      console.log('Result message result:', resultMessage.result?.substring(0, 500));
+      console.log('Assistant snippets count:', assistantSnippets.length);
+      console.log('Combined response length:', responseText.length);
+      console.log('Response preview:', responseText.substring(0, 1000));
+      console.log('=== End Debug ===');
+
+      // Extract JSON from the response - try multiple patterns
+      let jsonMatch = responseText.match(/```json\s*([\s\S]*?)```/);
+      if (jsonMatch) {
+        jsonMatch = [jsonMatch[1]]; // Extract content from code block
+      } else {
+        jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      }
+      
       if (!jsonMatch) {
-        throw new Error('No JSON found in agent response');
+        throw new Error(`No JSON found in agent response. Response preview: ${responseText.substring(0, 500)}`);
       }
 
       const parsedResult = JSON.parse(jsonMatch[0]);
