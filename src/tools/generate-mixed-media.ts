@@ -31,6 +31,7 @@ export const generateMixedMediaCreativeTool = {
       // Create text summary for LLM
       const textSummary = `Generated mixed media creative:
 
+**Composite Image URL**: ${result.composite_image_url}
 **Platform**: ${result.platform}
 **Dimensions**: ${result.dimensions.width}×${result.dimensions.height}
 **Source Image**: Variation ${result.source_image_variation}

@@ -31,10 +31,12 @@ export const generateAdImagesTool = {
       const textSummary = `Generated two ad image variations:
 
 **Variation A** (${result.recommended_variation === 'A' ? '⭐ Recommended' : ''}):
+- Image URL: ${result.variations[0].image_url}
 - Visual Approach: ${result.variations[0].visual_approach}
 - Dimensions: ${result.variations[0].dimensions.width}×${result.variations[0].dimensions.height}
 
 **Variation B** (${result.recommended_variation === 'B' ? '⭐ Recommended' : ''}):
+- Image URL: ${result.variations[1].image_url}
 - Visual Approach: ${result.variations[1].visual_approach}
 - Dimensions: ${result.variations[1].dimensions.width}×${result.variations[1].dimensions.height}
 
