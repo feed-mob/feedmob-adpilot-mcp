@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import type { ChatMessage, ToolDefinition } from '@/lib/types';
-import { getBedrockService } from '@/lib/services/bedrock';
 import { MessageList } from './message-list';
 import { ChatInput } from './chat-input';
 import { ConnectionStatus } from './connection-status';
@@ -19,8 +18,6 @@ export function ChatContainer({ initialMessages = [], onMessagesChange }: ChatCo
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [tools, setTools] = useState<ToolDefinition[]>([]);
-
-  const bedrockService = useRef(getBedrockService());
 
   // Check MCP connection on mount
   useEffect(() => {
@@ -93,76 +90,86 @@ export function ChatContainer({ initialMessages = [], onMessagesChange }: ChatCo
     addMessage(assistantMessage);
 
     try {
-      // Stream response from Bedrock
+      // Stream response from server-side Bedrock proxy
       const conversationMessages = [...messages, userMessage];
-      
-      for await (const event of bedrockService.current.converseStream({
-        messages: conversationMessages,
-        tools: tools.length > 0 ? tools : undefined,
-      })) {
-        if (event.type === 'text' && event.content) {
-          // Append text to assistant message
-          updateLastMessage((msg) => {
-            const lastContent = msg.content[msg.content.length - 1];
-            if (lastContent?.type === 'text') {
-              // Append to existing text content
-              return {
-                ...msg,
-                content: [
-                  ...msg.content.slice(0, -1),
-                  { type: 'text', text: lastContent.text + event.content },
-                ],
-              };
-            } else {
-              // Add new text content
+
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: conversationMessages,
+          tools: tools.length > 0 ? tools : undefined,
+        }),
+      });
+
+      if (!response.body) {
+        throw new Error('No response stream from server');
+      }
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error || 'Failed to start chat stream');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split('\n\n');
+        buffer = parts.pop() || '';
+
+        for (const part of parts) {
+          const line = part.trim();
+          if (!line.startsWith('data:')) continue;
+
+          const payload = line.slice(5).trim();
+          if (payload === '[DONE]') {
+            return;
+          }
+
+          let event: any;
+          try {
+            event = JSON.parse(payload);
+          } catch {
+            console.warn('Failed to parse stream chunk', payload);
+            continue;
+          }
+
+          if (event.type === 'text' && event.content) {
+            updateLastMessage((msg) => {
+              const lastContent = msg.content[msg.content.length - 1];
+              if (lastContent?.type === 'text') {
+                return {
+                  ...msg,
+                  content: [
+                    ...msg.content.slice(0, -1),
+                    { type: 'text', text: lastContent.text + event.content },
+                  ],
+                };
+              }
               return {
                 ...msg,
                 content: [...msg.content, { type: 'text', text: event.content! }],
               };
-            }
-          });
-        } else if (event.type === 'tool_use' && event.toolUse) {
-          // Add tool use to assistant message
-          updateLastMessage((msg) => ({
-            ...msg,
-            content: [
-              ...msg.content,
-              {
-                type: 'tool_use',
-                toolUseId: event.toolUse!.toolUseId,
-                name: event.toolUse!.name,
-                input: event.toolUse!.input,
-              },
-            ],
-          }));
-
-          // Execute the tool via API
-          const toolResponse = await fetch('/api/mcp/tools', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name: event.toolUse.name,
-              params: event.toolUse.input,
-            }),
-          });
-          const toolResult = await toolResponse.json();
-
-          // Add tool result message
-          const toolResultMessage: ChatMessage = {
-            id: `tool-${Date.now()}`,
-            role: 'tool',
-            content: [
-              {
-                type: 'tool_result',
-                toolUseId: event.toolUse.toolUseId,
-                content: toolResult.content,
-              },
-            ],
-            timestamp: Date.now(),
-          };
-          addMessage(toolResultMessage);
-        } else if (event.type === 'error') {
-          setError(event.error || 'An error occurred');
+            });
+          } else if (event.type === 'tool_use' && event.toolUse) {
+            addMessage({
+              id: `tool-${event.toolUse.toolUseId}`,
+              role: 'assistant',
+              content: [
+                { type: 'text', text: `Calling tool: ${event.toolUse.name}` },
+                { type: 'text', text: `Params: ${JSON.stringify(event.toolUse.input, null, 2)}` },
+              ],
+              timestamp: Date.now(),
+            });
+          } else if (event.type === 'error' && event.error) {
+            throw new Error(event.error as string);
+          }
         }
       }
     } catch (error: any) {
