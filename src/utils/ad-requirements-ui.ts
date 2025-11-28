@@ -218,8 +218,10 @@ export function createParametersUI(result: ValidationResult) {
         window.parent.postMessage({
           type: 'tool',
           payload: {
-            toolName: 'confirmCampaignParameters',
-            params: ${JSON.stringify(parameters)}
+            toolName: 'conductAdResearch',
+            params: {
+              campaignParameters: ${JSON.stringify(parameters)}
+            }
           }
         }, '*');
       }
