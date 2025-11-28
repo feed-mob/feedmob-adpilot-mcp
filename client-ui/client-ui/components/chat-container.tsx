@@ -65,6 +65,70 @@ export function ChatContainer({ initialMessages = [], onMessagesChange }: ChatCo
     });
   };
 
+  const handleToolCallFromUI = async (toolName: string, params: Record<string, unknown>) => {
+    const toolUseId = `ui-tool-${Date.now()}`;
+
+    // Add tool call message
+    addMessage({
+      id: `tool-use-${toolUseId}`,
+      role: 'assistant',
+      content: [
+        { type: 'text', text: `Calling tool: ${toolName}` },
+        { type: 'text', text: `Params: ${JSON.stringify(params, null, 2)}` },
+      ],
+      timestamp: Date.now(),
+    });
+
+    try {
+      const toolResponse = await fetch('/api/mcp/tools', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: toolName, params }),
+      });
+
+      const toolResult = await toolResponse.json();
+
+      const resultContent =
+        toolResult?.content && Array.isArray(toolResult.content)
+          ? toolResult.content.map((item: any) => {
+            if (item.type === 'resource') {
+              return {
+                type: 'resource',
+                resource: item.resource,
+              };
+            }
+            return { type: 'text', text: item.text || '' };
+          })
+          : [{ type: 'text', text: 'No result returned from tool' }];
+
+      addMessage({
+        id: `tool-result-${toolUseId}`,
+        role: 'tool',
+        content: [
+          {
+            type: 'tool_result',
+            toolUseId,
+            content: resultContent,
+          },
+        ],
+        timestamp: Date.now(),
+      });
+    } catch (toolError: any) {
+      addMessage({
+        id: `tool-error-${toolUseId}`,
+        role: 'assistant',
+        content: [
+          {
+            type: 'text',
+            text: `Tool ${toolName} failed: ${toolError?.message || 'Unknown error'}`,
+          },
+        ],
+        timestamp: Date.now(),
+      });
+    }
+  };
+
+
   const handleSendMessage = async (text: string) => {
     if (!text.trim() || isLoading) return;
 
@@ -252,7 +316,7 @@ export function ChatContainer({ initialMessages = [], onMessagesChange }: ChatCo
       </div>
 
       <div className="flex-1 overflow-hidden">
-        <MessageList messages={messages} />
+        <MessageList messages={messages} onToolCall={handleToolCallFromUI} />
       </div>
 
       {error && (

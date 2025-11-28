@@ -6,9 +6,10 @@ import { MessageItem } from './message-item';
 
 export interface MessageListProps {
   messages: ChatMessage[];
+  onToolCall?: (toolName: string, params: Record<string, unknown>) => Promise<void>;
 }
 
-export function MessageList({ messages }: MessageListProps) {
+export function MessageList({ messages, onToolCall }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -31,7 +32,7 @@ export function MessageList({ messages }: MessageListProps) {
     <div className="h-full overflow-y-auto p-4">
       <div className="max-w-5xl mx-auto space-y-6">
         {messages.map((message) => (
-          <MessageItem key={message.id} message={message} />
+          <MessageItem key={message.id} message={message} onToolCall={onToolCall} />
         ))}
         <div ref={bottomRef} />
       </div>

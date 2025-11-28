@@ -7,30 +7,40 @@ import { AlertCircle } from 'lucide-react';
 
 export interface UIResourceMessageProps {
   resource: UIResource;
+  onToolCall?: (toolName: string, params: Record<string, unknown>) => Promise<void>;
 }
 
-export function UIResourceMessage({ resource }: UIResourceMessageProps) {
+export function UIResourceMessage({ resource, onToolCall }: UIResourceMessageProps) {
   const [error, setError] = useState<string | null>(null);
 
   const handleUIAction = async (action: UIAction): Promise<UIActionResult> => {
     try {
       if (action.type === 'tool') {
-        // Execute MCP tool via API
+        // Execute MCP tool via callback if available
         const toolName = (action.payload as any).toolName;
         const params = (action.payload as any).params || {};
 
-        const response = await fetch('/api/mcp/tools', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: toolName, params }),
-        });
+        if (onToolCall) {
+          // Use the callback to add messages to chat
+          await onToolCall(toolName, params);
+          return {
+            status: 'handled',
+          };
+        } else {
+          // Fallback: direct API call (won't show in chat)
+          const response = await fetch('/api/mcp/tools', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: toolName, params }),
+          });
 
-        const result = await response.json();
+          const result = await response.json();
 
-        return {
-          status: 'handled',
-          result: result.content,
-        };
+          return {
+            status: 'handled',
+            result: result.content,
+          };
+        }
       } else if (action.type === 'prompt') {
         // Display prompt to user
         const promptText = (action.payload as any).prompt;

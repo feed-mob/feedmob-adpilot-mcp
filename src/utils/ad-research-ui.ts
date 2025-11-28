@@ -280,17 +280,6 @@ export function createResearchReportUI(report: CampaignReport, campaignParameter
         --accent-green: #0d9b45;
         --accent-red: #ff3b30;
       }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg-primary: #0f0f10;
-          --bg-secondary: #1a1b1d;
-          --bg-tertiary: #242529;
-          --text-primary: #f5f5f5;
-          --text-secondary: #c8c8cc;
-          --text-tertiary: #9a9aa0;
-          --icon-primary: #f5f5f5;
-        }
-      }
       .research-report-container {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         padding: 30px;
@@ -755,15 +744,6 @@ export function createResearchErrorUI(
         --text-secondary: #444;
         --accent-red: #ff3b30;
         --accent-blue: #0078ff;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg-primary: #0f0f10;
-          --bg-secondary: #1a1b1d;
-          --bg-tertiary: #242529;
-          --text-primary: #f5f5f5;
-          --text-secondary: #c8c8cc;
-        }
       }
       .error-container {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;

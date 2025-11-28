@@ -7,9 +7,10 @@ import { UIResourceMessage } from './ui-resource-message';
 
 export interface MessageItemProps {
   message: ChatMessage;
+  onToolCall?: (toolName: string, params: Record<string, unknown>) => Promise<void>;
 }
 
-export function MessageItem({ message }: MessageItemProps) {
+export function MessageItem({ message, onToolCall }: MessageItemProps) {
   const isUser = message.role === 'user';
 
   return (
@@ -41,14 +42,14 @@ export function MessageItem({ message }: MessageItemProps) {
                   if (item.type === 'text') {
                     return <TextMessage key={itemIndex} text={item.text} />;
                   } else if (item.type === 'resource') {
-                    return <UIResourceMessage key={itemIndex} resource={item.resource} />;
+                    return <UIResourceMessage key={itemIndex} resource={item.resource} onToolCall={onToolCall} />;
                   }
                   return null;
                 })}
               </div>
             );
           } else if (content.type === 'resource') {
-            return <UIResourceMessage key={index} resource={content.resource} />;
+            return <UIResourceMessage key={index} resource={content.resource} onToolCall={onToolCall} />;
           }
           return null;
         })}
