@@ -54,7 +54,7 @@ export function ChatHistory({ currentSessionId, onSelectSession, onNewSession }:
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
       >
         <History className="w-4 h-4" />
         <span>History</span>
@@ -66,8 +66,8 @@ export function ChatHistory({ currentSessionId, onSelectSession, onNewSession }:
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 max-h-96 overflow-y-auto">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-y-auto">
+            <div className="p-4 border-b border-gray-200">
               <button
                 onClick={() => {
                   onNewSession();
@@ -82,7 +82,7 @@ export function ChatHistory({ currentSessionId, onSelectSession, onNewSession }:
 
             <div className="p-2">
               {sessions.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <div className="text-center py-8 text-gray-500">
                   <p className="text-sm">No chat history yet</p>
                 </div>
               ) : (
@@ -93,23 +93,22 @@ export function ChatHistory({ currentSessionId, onSelectSession, onNewSession }:
                       onSelectSession(session.id);
                       setIsOpen(false);
                     }}
-                    className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
-                      session.id === currentSessionId
-                        ? 'bg-blue-50 dark:bg-blue-900/20'
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                    }`}
+                    className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${session.id === currentSessionId
+                        ? 'bg-blue-50'
+                        : 'hover:bg-gray-100'
+                      }`}
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                      <p className="text-sm font-medium text-gray-900 truncate">
                         {session.title}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs text-gray-500">
                         {session.messages.length} messages · {formatDate(session.updatedAt)}
                       </p>
                     </div>
                     <button
                       onClick={(e) => handleDelete(session.id, e)}
-                      className="ml-2 p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                      className="ml-2 p-1 text-gray-400 hover:text-red-600 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

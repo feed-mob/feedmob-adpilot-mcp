@@ -80,7 +80,7 @@ export function UIResourceMessage({ resource }: UIResourceMessageProps) {
   // Check if this is a UIResource (has ui:// URI)
   if (!resource.uri?.startsWith('ui://')) {
     return (
-      <div className="text-sm text-gray-600 dark:text-gray-400">
+      <div className="text-sm text-gray-600">
         Resource: {resource.uri}
       </div>
     );
@@ -88,12 +88,12 @@ export function UIResourceMessage({ resource }: UIResourceMessageProps) {
 
   if (error) {
     return (
-      <div className="border border-red-200 dark:border-red-800 rounded-lg p-4 bg-red-50 dark:bg-red-900/20">
-        <div className="flex items-center gap-2 text-red-800 dark:text-red-200">
+      <div className="rounded-lg p-4 bg-red-50/50">
+        <div className="flex items-center gap-2 text-red-600">
           <AlertCircle className="w-5 h-5" />
           <div>
             <p className="font-medium">Failed to render UI component</p>
-            <p className="text-sm mt-1">{error}</p>
+            <p className="text-sm mt-1 opacity-90">{error}</p>
           </div>
         </div>
       </div>
@@ -102,7 +102,7 @@ export function UIResourceMessage({ resource }: UIResourceMessageProps) {
 
   try {
     return (
-      <div className="my-4">
+      <div className="w-full overflow-hidden rounded-xl bg-white shadow-sm border border-gray-100">
         <UIResourceRenderer
           resource={resource}
           onUIAction={handleUIAction}
@@ -110,10 +110,9 @@ export function UIResourceMessage({ resource }: UIResourceMessageProps) {
             autoResizeIframe: true,
             style: {
               width: '100%',
-              minHeight: '300px',
+              minHeight: '500px',
               border: 'none',
-              borderRadius: '10px',
-              overflow: 'hidden',
+              display: 'block',
             },
           }}
         />
@@ -122,12 +121,12 @@ export function UIResourceMessage({ resource }: UIResourceMessageProps) {
   } catch (error: any) {
     setError(error.message);
     return (
-      <div className="border border-red-200 dark:border-red-800 rounded-lg p-4 bg-red-50 dark:bg-red-900/20">
-        <div className="flex items-center gap-2 text-red-800 dark:text-red-200">
+      <div className="rounded-lg p-4 bg-red-50/50">
+        <div className="flex items-center gap-2 text-red-600">
           <AlertCircle className="w-5 h-5" />
           <div>
             <p className="font-medium">Failed to render UI component</p>
-            <p className="text-sm mt-1">{error.message}</p>
+            <p className="text-sm mt-1 opacity-90">{error.message}</p>
           </div>
         </div>
       </div>

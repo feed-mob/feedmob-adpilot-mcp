@@ -33,7 +33,7 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
         onKeyDown={handleKeyDown}
         placeholder={disabled ? 'Connecting...' : 'Type your message... (Shift+Enter for new line)'}
         disabled={disabled}
-        className="flex-1 resize-none rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex-1 resize-none rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         rows={3}
       />
       <button

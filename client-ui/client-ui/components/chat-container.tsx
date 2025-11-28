@@ -25,7 +25,7 @@ export function ChatContainer({ initialMessages = [], onMessagesChange }: ChatCo
       try {
         const response = await fetch('/api/mcp/tools');
         const data = await response.json();
-        
+
         if (response.ok && data.tools) {
           setIsConnected(true);
           setTools(data.tools);
@@ -193,14 +193,14 @@ export function ChatContainer({ initialMessages = [], onMessagesChange }: ChatCo
               const resultContent =
                 toolResult?.content && Array.isArray(toolResult.content)
                   ? toolResult.content.map((item: any) => {
-                      if (item.type === 'resource') {
-                        return {
-                          type: 'resource',
-                          resource: item.resource,
-                        };
-                      }
-                      return { type: 'text', text: item.text || '' };
-                    })
+                    if (item.type === 'resource') {
+                      return {
+                        type: 'resource',
+                        resource: item.resource,
+                      };
+                    }
+                    return { type: 'text', text: item.text || '' };
+                  })
                   : [{ type: 'text', text: 'No result returned from tool' }];
 
               addMessage({
@@ -222,9 +222,8 @@ export function ChatContainer({ initialMessages = [], onMessagesChange }: ChatCo
                 content: [
                   {
                     type: 'text',
-                    text: `Tool ${event.toolUse.name} failed: ${
-                      toolError?.message || 'Unknown error'
-                    }`,
+                    text: `Tool ${event.toolUse.name} failed: ${toolError?.message || 'Unknown error'
+                      }`,
                   },
                 ],
                 timestamp: Date.now(),
@@ -243,8 +242,8 @@ export function ChatContainer({ initialMessages = [], onMessagesChange }: ChatCo
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
-      <div className="flex-shrink-0 border-b border-gray-200 dark:border-gray-800 p-4">
+    <div className="flex flex-col h-full bg-gray-50">
+      <div className="flex-shrink-0 border-b border-gray-200 p-4">
         <ConnectionStatus
           isConnected={isConnected}
           error={connectionError}
@@ -257,12 +256,12 @@ export function ChatContainer({ initialMessages = [], onMessagesChange }: ChatCo
       </div>
 
       {error && (
-        <div className="flex-shrink-0 bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800 p-4">
-          <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+        <div className="flex-shrink-0 bg-red-50 border-t border-red-200 p-4">
+          <p className="text-sm text-red-800">{error}</p>
         </div>
       )}
 
-      <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-800 p-4">
+      <div className="flex-shrink-0 border-t border-gray-200 p-4">
         <ChatInput onSend={handleSendMessage} disabled={isLoading || !isConnected} />
       </div>
     </div>

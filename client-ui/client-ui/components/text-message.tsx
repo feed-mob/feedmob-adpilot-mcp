@@ -9,7 +9,7 @@ export interface TextMessageProps {
 
 export function TextMessage({ text }: TextMessageProps) {
   return (
-    <div className="prose prose-sm dark:prose-invert max-w-none">
+    <div className="prose prose-sm max-w-none">
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
     </div>
   );

@@ -52,8 +52,8 @@ export default function Home() {
 
   return (
     <div className="h-screen flex flex-col">
-      <div className="flex-shrink-0 border-b border-gray-200 dark:border-gray-800 p-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+      <div className="flex-shrink-0 border-b border-gray-200 p-4 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">
           MCP-UI Chat Client
         </h1>
         <ChatHistory
