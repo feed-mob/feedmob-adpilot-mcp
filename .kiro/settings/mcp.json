@@ -47,7 +47,8 @@
       "url": "https://gitmcp.io/idosal/mcp-ui",
       "disabled": false,
       "autoApprove": [
-        "fetch_mcp_ui_documentation"
+        "fetch_mcp_ui_documentation",
+        "search_mcp_ui_documentation"
       ]
     },
     "agent-skills": {

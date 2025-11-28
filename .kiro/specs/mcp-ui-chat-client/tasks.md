@@ -1,0 +1,192 @@
+# Implementation Plan
+
+- [x] 1. Initialize Next.js project and configure dependencies
+  - Create new Next.js project in `mcp-ui-chat-client` sibling folder with TypeScript and App Router
+  - Install core dependencies: @aws-sdk/client-bedrock-runtime, @modelcontextprotocol/sdk, @mcp-ui/client, zod
+  - Install UI dependencies: tailwindcss, shadcn/ui components, lucide-react
+  - Install dev dependencies: vitest, fast-check, @testing-library/react
+  - Configure environment variables schema with zod validation
+  - _Requirements: 4.1, 4.3, 3.1, 3.5_
+
+- [x] 2. Implement core data models and schemas
+  - [x] 2.1 Create message and UIResource type definitions and Zod schemas
+    - Define ChatMessage, MessageContent, UIResource, UIAction, ChatSession types
+    - Create Zod schemas for validation (ChatMessageSchema, UIResourceSchema, ChatSessionSchema)
+    - Export TypeScript types from Zod schemas
+    - _Requirements: 9.1, 9.3, 9.4_
+  - [x]* 2.2 Write property test for message serialization round-trip
+    - **Property 6: Message serialization round-trip**
+    - **Validates: Requirements 9.1, 9.2, 9.3**
+  - [x]* 2.3 Write property test for schema validation
+    - **Property 7: Schema validation on deserialization**
+    - **Validates: Requirements 9.4**
+
+- [x] 3. Implement AWS Bedrock service
+  - [x] 3.1 Create BedrockService class with ConverseStream API integration
+    - Initialize BedrockRuntimeClient with credentials from environment
+    - Implement converseStream method using ConverseStreamCommand
+    - Handle streaming response events (text, tool_use, stop)
+    - Configure model ID: us.anthropic.claude-haiku-4-5-20251001-v1:0
+    - _Requirements: 1.1, 4.1, 4.2_
+  - [x] 3.2 Implement credential validation and error handling
+    - Check for required AWS environment variables
+    - Handle rate limit/throttling errors with user-friendly messages
+    - Handle service errors gracefully
+    - _Requirements: 4.3, 4.4, 8.3_
+  - [x]* 3.3 Write property test for Bedrock model invocation
+    - **Property 1: Message submission invokes Bedrock with correct model**
+    - **Validates: Requirements 1.1, 4.2**
+  - [x]* 3.4 Write property test for AI error display
+    - **Property 9: AI error display**
+    - **Validates: Requirements 8.3**
+
+- [x] 4. Implement MCP client service
+  - [x] 4.1 Create MCPClientService with HTTP streaming transport
+    - Initialize MCP Client with StreamableHTTPClientTransport
+    - Implement connect method to establish connection to MCP_SERVER_URL
+    - Implement disconnect method for cleanup
+    - Handle connection errors and display status
+    - _Requirements: 3.1, 3.2, 3.4, 3.5_
+  - [x] 4.2 Implement tool discovery and execution
+    - Fetch available tools from MCP server after connection
+    - Convert MCP tool definitions to Bedrock tool format
+    - Implement callTool method to execute tools and return results
+    - Handle tool execution errors
+    - _Requirements: 3.3, 1.3, 1.4, 8.2_
+  - [x]* 4.3 Write property test for tool discovery
+    - **Property 5: Tool discovery after connection**
+    - **Validates: Requirements 3.3**
+  - [x]* 4.4 Write property test for tool error handling
+    - **Property 8: Tool error display and conversation continuity**
+    - **Validates: Requirements 8.2**
+
+- [x] 5. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 6. Implement chat UI components
+  - [x] 6.1 Create ChatContainer component
+    - Manage chat state (messages, loading, error)
+    - Handle message submission and streaming responses
+    - Coordinate between Bedrock service and MCP client
+    - _Requirements: 1.1, 1.5, 7.1_
+  - [x] 6.2 Create MessageList and MessageItem components
+    - Render list of messages with proper styling
+    - Support different message types (user, assistant, tool)
+    - Render markdown content with react-markdown
+    - _Requirements: 1.2, 7.1_
+  - [x] 6.3 Create ToolCallMessage component
+    - Display tool call status (pending, success, error)
+    - Show tool name and parameters
+    - Display tool results
+    - _Requirements: 1.3, 1.4_
+  - [x] 6.4 Create ChatInput component
+    - Text input with submit button
+    - Handle Enter key submission
+    - Disable during loading state
+    - _Requirements: 1.1, 7.1_
+  - [x] 6.5 Create ConnectionStatus component
+    - Display MCP server connection status
+    - Show error messages for connection failures
+    - Provide retry button
+    - _Requirements: 3.4, 8.1_
+
+- [x] 7. Implement UIResource rendering
+  - [x] 7.1 Create UIResourceMessage component with UIResourceRenderer
+    - Integrate @mcp-ui/client UIResourceRenderer
+    - Detect UIResource in tool results by ui:// URI scheme
+    - Configure component library for Remote DOM support
+    - Handle iframe sizing from metadata
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 7.4_
+  - [x] 7.2 Implement UIAction handler
+    - Handle 'tool' actions by calling MCP tools
+    - Handle 'prompt' actions by displaying prompts
+    - Handle 'notify' actions by showing notifications
+    - Handle 'link' actions by opening URLs
+    - Handle 'intent' actions appropriately
+    - _Requirements: 2.5, 5.1, 5.2, 5.3, 5.4_
+  - [x] 7.3 Implement async message response handling
+    - Detect messageId in UIActions
+    - Send response messages back to iframe
+    - Handle success and error responses
+    - _Requirements: 5.5_
+  - [x] 7.4 Implement UIResource error boundary
+    - Catch rendering errors
+    - Display fallback error state
+    - Log errors for debugging
+    - _Requirements: 8.4_
+  - [x]* 7.5 Write property test for UIResource detection
+    - **Property 2: UIResource detection and rendering**
+    - **Validates: Requirements 2.1**
+  - [x]* 7.6 Write property test for UIAction handling
+    - **Property 3: UIResource action handling by type**
+    - **Validates: Requirements 2.5, 5.1, 5.3**
+  - [x]* 7.7 Write property test for async message response
+    - **Property 4: Async message response**
+    - **Validates: Requirements 5.5**
+  - [x]* 7.8 Write property test for UIResource render fallback
+    - **Property 10: UIResource render fallback**
+    - **Validates: Requirements 8.4**
+  - [x]* 7.9 Write property test for iframe sizing
+    - **Property 13: Iframe sizing from metadata**
+    - **Validates: Requirements 7.4**
+
+- [x] 8. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 9. Implement chat persistence
+  - [x] 9.1 Create storage service for chat sessions
+    - Implement save/load methods using localStorage
+    - Generate unique session IDs
+    - Auto-save on message changes
+    - _Requirements: 6.1, 6.2_
+  - [x] 9.2 Create ChatHistory component
+    - Display list of previous conversations
+    - Show conversation titles and timestamps
+    - Handle conversation selection
+    - Handle new conversation creation
+    - _Requirements: 6.1, 6.3, 6.4_
+  - [x]* 9.3 Write property test for message persistence
+    - **Property 11: Message persistence**
+    - **Validates: Requirements 6.2**
+  - [x]* 9.4 Write property test for conversation loading
+    - **Property 12: Conversation loading**
+    - **Validates: Requirements 6.4**
+
+- [x] 10. Implement responsive design and theming
+  - [x] 10.1 Configure Tailwind CSS with dark mode support
+    - Set up Tailwind with dark mode class strategy
+    - Define color palette matching design system
+    - Configure responsive breakpoints
+    - _Requirements: 7.2, 7.3_
+  - [x] 10.2 Implement responsive layout
+    - Mobile-first layout with collapsible sidebar
+    - Responsive message bubbles
+    - Touch-friendly input controls
+    - _Requirements: 7.2_
+
+- [x] 11. Create API routes
+  - [x] 11.1 Create /api/chat route for Bedrock communication
+    - Handle POST requests with messages
+    - Stream responses back to client
+    - Include tool definitions from MCP client
+    - _Requirements: 1.1, 1.5_
+  - [x] 11.2 Create /api/mcp/tools route for tool execution
+    - Handle POST requests with tool name and parameters
+    - Execute tool via MCP client
+    - Return tool results including UIResources
+    - _Requirements: 1.3, 1.4, 5.1_
+
+- [x] 12. Final integration and testing
+  - [x] 12.1 Wire up all components in main chat page
+    - Connect ChatContainer to API routes
+    - Initialize MCP client on page load
+    - Handle connection lifecycle
+    - _Requirements: All_
+  - [x]* 12.2 Write integration tests for full chat flow
+    - Test message submission and response
+    - Test tool call execution
+    - Test UIResource rendering
+    - _Requirements: 1.1, 1.3, 2.1_
+
+- [x] 13. Final Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
