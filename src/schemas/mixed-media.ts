@@ -36,11 +36,17 @@ export type MixedMediaResult = z.infer<typeof MixedMediaResultSchema>;
 
 /**
  * Schema for generate mixed media tool input
+ * Accepts either campaignId (to retrieve from database) or inline parameters
  */
 export const GenerateMixedMediaInputSchema = z.object({
-  selectedImage: ImageVariationSchema,
-  adCopy: AdCopyVariationSchema,
-  platform: z.string().min(1, 'Platform must not be empty')
-});
+  campaignId: z.string().uuid('Campaign ID must be a valid UUID').optional(),
+  selectedImageVariation: z.enum(['A', 'B']).optional(),
+  selectedImage: ImageVariationSchema.optional(),
+  adCopy: AdCopyVariationSchema.optional(),
+  platform: z.string().min(1, 'Platform must not be empty').optional()
+}).refine(
+  data => data.campaignId || (data.selectedImage && data.adCopy && data.platform),
+  { message: 'Either campaignId or (selectedImage, adCopy, and platform) must be provided' }
+);
 
 export type GenerateMixedMediaInput = z.infer<typeof GenerateMixedMediaInputSchema>;

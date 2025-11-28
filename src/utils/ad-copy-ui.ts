@@ -4,7 +4,7 @@ import { AdCopyResult } from '../schemas/ad-copy.js';
 /**
  * Creates a UIResource displaying two ad copy variations side-by-side
  */
-export function createAdCopyUI(result: AdCopyResult) {
+export function createAdCopyUI(result: AdCopyResult, campaignId?: string) {
   const { variations, recommended_variation, recommendation_rationale, disclaimer } = result;
   
   // Find variations A and B
@@ -52,6 +52,37 @@ export function createAdCopyUI(result: AdCopyResult) {
         font-size: 14px;
         color: var(--text-secondary);
       }
+      .campaign-id-banner {
+        background: var(--bg-tertiary);
+        padding: 10px 15px;
+        border-radius: 6px;
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--accent-blue);
+      }
+      .campaign-id-label {
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 13px;
+      }
+      .campaign-id-value {
+        font-family: 'Courier New', monospace;
+        background: var(--bg-primary);
+        padding: 3px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+        color: var(--accent-blue);
+      }
+      .copy-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        padding: 2px 6px;
+      }
+      .copy-btn:hover { opacity: 0.7; }
       .variations-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -202,6 +233,13 @@ export function createAdCopyUI(result: AdCopyResult) {
           ${result.target_audience ? `Audience: ${result.target_audience} • ` : ''}
           Generated ${new Date(result.generated_at).toLocaleString()}
         </div>
+        ${campaignId ? `
+        <div class="campaign-id-banner">
+          <span class="campaign-id-label">Campaign ID:</span>
+          <code class="campaign-id-value">${campaignId}</code>
+          <button class="copy-btn" onclick="copyToClipboard('${campaignId}')">📋</button>
+        </div>
+        ` : ''}
       </div>
 
       <div class="variations-grid">
@@ -280,35 +318,60 @@ export function createAdCopyUI(result: AdCopyResult) {
 
     </div>
     <script>
+      const CAMPAIGN_ID = ${campaignId ? `'${campaignId}'` : 'null'};
+
+      function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+          const btn = document.querySelector('.copy-btn');
+          if (btn) {
+            btn.textContent = '✓';
+            setTimeout(() => { btn.textContent = '📋'; }, 2000);
+          }
+        });
+      }
+
       function handleSelectVariation(variationId) {
         const selectedVariation = variationId === 'A' 
           ? ${JSON.stringify(variationA)}
           : ${JSON.stringify(variationB)};
 
-        // Call generateAdImages with the selected ad copy variation
-        window.parent.postMessage({
-          type: 'tool',
-          payload: {
-            toolName: 'generateAdImages',
-            params: {
-              campaignParameters: {
-                product_or_service: null,
-                product_or_service_url: null,
-                campaign_name: ${JSON.stringify(result.campaign_name)},
-                target_audience: ${JSON.stringify(result.target_audience)},
-                geography: null,
-                ad_format: null,
-                budget: null,
-                platform: ${JSON.stringify(result.platform)},
-                kpi: null,
-                time_period: null,
-                creative_direction: selectedVariation.body_copy,
-                other_details: 'Selected ad copy: ' + selectedVariation.headline + ' | CTA: ' + selectedVariation.cta
-              },
-              selectedAdCopy: selectedVariation
+        // Store selection if we have a campaign ID
+        if (CAMPAIGN_ID) {
+          window.parent.postMessage({
+            type: 'tool',
+            payload: {
+              toolName: 'generateAdImages',
+              params: {
+                campaignId: CAMPAIGN_ID,
+                selectedAdCopy: selectedVariation
+              }
             }
-          }
-        }, '*');
+          }, '*');
+        } else {
+          window.parent.postMessage({
+            type: 'tool',
+            payload: {
+              toolName: 'generateAdImages',
+              params: {
+                campaignParameters: {
+                  product_or_service: null,
+                  product_or_service_url: null,
+                  campaign_name: ${JSON.stringify(result.campaign_name)},
+                  target_audience: ${JSON.stringify(result.target_audience)},
+                  geography: null,
+                  ad_format: null,
+                  budget: null,
+                  platform: ${JSON.stringify(result.platform)},
+                  kpi: null,
+                  time_period: null,
+                  creative_direction: selectedVariation.body_copy,
+                  other_details: 'Selected ad copy: ' + selectedVariation.headline + ' | CTA: ' + selectedVariation.cta
+                },
+                selectedAdCopy: selectedVariation
+              }
+            }
+          }, '*');
+        }
       }
     </script>
   `;
@@ -332,13 +395,18 @@ export function createAdCopyUI(result: AdCopyResult) {
  */
 export function createAdCopyErrorUI(
   error: Error,
-  errorType: 'validation' | 'agent' | 'timeout' | 'unknown' = 'unknown'
+  errorType: 'validation' | 'agent' | 'timeout' | 'not_found' | 'unknown' = 'unknown'
 ) {
   const errorMessages = {
     validation: {
       title: 'Invalid Input Parameters',
       message: 'The campaign parameters could not be validated. Please check the input and try again.',
       icon: '⚠️'
+    },
+    not_found: {
+      title: 'Campaign Not Found',
+      message: 'The specified campaign ID was not found. Please check the ID or create a new campaign.',
+      icon: '🔍'
     },
     agent: {
       title: 'Ad Copy Generation Error',

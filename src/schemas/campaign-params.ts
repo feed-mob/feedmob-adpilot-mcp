@@ -36,6 +36,7 @@ export type ValidationResult = z.infer<typeof ValidationResultSchema>;
 /**
  * Schema for parse ad requirements tool input
  * Validates that requestText is non-empty and contains non-whitespace characters
+ * Optional campaignId for updating existing campaigns
  */
 export const ParseAdRequirementsInputSchema = z.object({
   requestText: z.string()
@@ -43,7 +44,8 @@ export const ParseAdRequirementsInputSchema = z.object({
     .refine(
       (val) => val.trim().length > 0,
       { message: 'Request text must contain non-whitespace characters' }
-    )
+    ),
+  campaignId: z.string().uuid('Campaign ID must be a valid UUID').optional()
 });
 
 export type ParseAdRequirementsInput = z.infer<typeof ParseAdRequirementsInputSchema>;

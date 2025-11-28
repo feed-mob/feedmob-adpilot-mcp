@@ -2,6 +2,10 @@ import { z } from 'zod';
 import { GenerateAdCopyInputSchema } from '../schemas/ad-copy.js';
 import { adCopyAgent } from '../services/ad-copy-agent.js';
 import { createAdCopyUI, createAdCopyErrorUI } from '../utils/ad-copy-ui.js';
+import type { CampaignParameters } from '../schemas/campaign-params.js';
+import type { CampaignReport } from '../schemas/ad-research.js';
+import { campaignService } from '../services/campaign.js';
+import { CampaignNotFoundError } from '../errors/campaign-errors.js';
 
 /**
  * Generate Ad Copy tool configuration for FastMCP
@@ -20,23 +24,62 @@ export const generateAdCopyTool = {
     try {
       // Validate input
       const validated = GenerateAdCopyInputSchema.parse(args);
-      
+
+      let campaignId: string | undefined = validated.campaignId;
+      let campaignParameters: CampaignParameters;
+      let campaignReport: CampaignReport | undefined = validated.campaignReport;
+
+      // Resolve campaign parameters and research context
+      if (validated.campaignId) {
+        const campaign = await campaignService.getCampaignOrThrow(validated.campaignId);
+
+        if (validated.campaignParameters) {
+          campaignParameters = validated.campaignParameters;
+          await campaignService.updateParameters(validated.campaignId, campaignParameters);
+        } else if (campaign.parameters) {
+          campaignParameters = campaign.parameters;
+        } else {
+          throw new Error('Campaign has no parameters stored. Please provide campaignParameters.');
+        }
+
+        if (validated.campaignReport) {
+          campaignReport = validated.campaignReport;
+          await campaignService.updateResearch(validated.campaignId, campaignReport);
+        } else if (campaign.research) {
+          campaignReport = campaign.research;
+        }
+      } else if (validated.campaignParameters) {
+        campaignParameters = validated.campaignParameters;
+        campaignReport = validated.campaignReport;
+      } else {
+        throw new Error('Either campaignId or campaignParameters must be provided');
+      }
+
       // Call agent service to generate ad copy
       const result = await adCopyAgent.generateCopy(
-        validated.campaignParameters,
-        validated.campaignReport
+        campaignParameters,
+        campaignReport
       );
-      
+
+      // Persist generated ad copy when tied to a campaign
+      if (campaignId) {
+        try {
+          await campaignService.updateAdCopy(campaignId, result);
+        } catch (dbError) {
+          console.error('Failed to store ad copy:', dbError);
+        }
+      }
+
       // Generate UI for the result
-      const uiResource = createAdCopyUI(result);
-      
+      const uiResource = createAdCopyUI(result, campaignId);
+
       // Create text summary for the LLM
       const variationA = result.variations.find(v => v.variation_id === 'A');
       const variationB = result.variations.find(v => v.variation_id === 'B');
       
       const textSummary = `Ad Copy Variations Generated:
 
-Campaign: ${result.campaign_name || 'Unnamed Campaign'}
+${campaignId ? `Campaign ID: ${campaignId}\n` : ''}Campaign: ${result.campaign_name || 'Unnamed Campaign'}
 Platform: ${result.platform || 'Not specified'}
 Target Audience: ${result.target_audience || 'Not specified'}
 Generated: ${new Date(result.generated_at).toLocaleString()}
@@ -87,10 +130,12 @@ The interactive UI above displays both variations side-by-side for easy comparis
       console.error('Error in generateAdCopy tool:', error);
       
       // Determine error type
-      let errorType: 'validation' | 'agent' | 'timeout' | 'unknown' = 'unknown';
+      let errorType: 'validation' | 'agent' | 'timeout' | 'not_found' | 'unknown' = 'unknown';
       
       if (error instanceof z.ZodError) {
         errorType = 'validation';
+      } else if (error instanceof CampaignNotFoundError) {
+        errorType = 'not_found';
       } else if (error instanceof Error) {
         if (error.message.includes('timeout') || error.message.includes('Timeout')) {
           errorType = 'timeout';
@@ -122,4 +167,3 @@ The interactive UI above displays both variations side-by-side for easy comparis
     }
   }
 };
-

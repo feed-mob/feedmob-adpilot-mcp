@@ -1,0 +1,207 @@
+# Implementation Plan
+
+- [x] 1. Set up database infrastructure
+  - [x] 1.1 Create DatabaseService with connection pool management
+    - Create `src/services/database.ts` with pg Pool configuration
+    - Implement connect(), disconnect(), isConnected(), healthCheck() methods
+    - Implement query() and queryOne() methods with type safety
+    - Implement transaction() method for atomic operations
+    - Add connection retry logic with exponential backoff
+    - _Requirements: 7.4, 8.3, 8.4_
+  - [ ]* 1.2 Write property test for database connection
+    - **Property 20: Schema Validation on Retrieval**
+    - **Validates: Requirements 8.2**
+  - [x] 1.3 Create database migration for campaigns table
+    - Create `src/migrations/001_create_campaigns.sql` with full schema
+    - Include JSONB columns for parameters, research, ad_copy, images, mixed_media
+    - Add selection columns and all timestamp columns
+    - Create index on campaign ID
+    - Create updated_at trigger function
+    - _Requirements: 7.1, 7.2, 7.3_
+  - [x] 1.4 Add migration runner to DatabaseService
+    - Implement runMigrations() method
+    - Track applied migrations in a migrations table
+    - Run migrations on application startup
+    - _Requirements: 7.4_
+  - [x] 1.5 Update environment configuration
+    - Add DATABASE_URL to .env.example
+    - Create src/config/database.ts for database config validation with Zod
+    - _Requirements: 7.4_
+
+- [x] 2. Create Campaign schema and service
+  - [x] 2.1 Create Campaign Zod schema
+    - Create `src/schemas/campaign.ts` with CampaignSchema
+    - Import and compose existing schemas (CampaignParameters, CampaignReport, etc.)
+    - Export Campaign type
+    - _Requirements: 8.1, 8.2_
+  - [ ]* 2.2 Write property test for Campaign schema round-trip
+    - **Property 6: Campaign Parameters Round-Trip**
+    - **Validates: Requirements 2.1**
+  - [x] 2.3 Create CampaignService with CRUD operations
+    - Create `src/services/campaign.ts`
+    - Implement createCampaign() - generates UUID, stores parameters
+    - Implement getCampaign() and getCampaignOrThrow()
+    - Implement updateParameters(), updateResearch(), updateAdCopy(), updateImages(), updateMixedMedia()
+    - Implement selectAdCopyVariation() and selectImageVariation()
+    - _Requirements: 8.1_
+  - [ ]* 2.4 Write property tests for CampaignService
+    - **Property 1: Campaign Creation Generates Valid UUID**
+    - **Property 2: Campaign Update Preserves ID**
+    - **Property 4: Timestamps Recorded on Storage**
+    - **Property 5: Invalid Campaign ID Returns Not Found**
+    - **Validates: Requirements 1.1, 1.2, 1.4, 1.6, 2.3, 6.3**
+  - [x] 2.5 Create custom error classes
+    - Create `src/errors/campaign-errors.ts`
+    - Implement CampaignNotFoundError, DatabaseConnectionError, MissingAssetsError
+    - _Requirements: 8.3_
+
+- [x] 3. Checkpoint - Ensure database layer tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 4. Update parseAdRequirements tool with persistence
+  - [x] 4.1 Update ParseAdRequirementsInputSchema
+    - Add optional campaignId field (UUID)
+    - Update schema in `src/schemas/campaign-params.ts`
+    - _Requirements: 1.1, 1.2_
+  - [x] 4.2 Update parseAdRequirements tool implementation
+    - Modify `src/tools/parse-ad-requirements.ts`
+    - If no campaignId: create new campaign, return new ID
+    - If campaignId provided: validate exists, update parameters
+    - Include campaignId in text response and UI
+    - Handle database errors gracefully (still return extracted params)
+    - _Requirements: 1.1, 1.2, 1.3, 1.5, 1.6_
+  - [x] 4.3 Update ad-requirements-ui to display campaign ID
+    - Modify `src/utils/ad-requirements-ui.ts`
+    - Add campaign ID display in UI header
+    - Add copy-to-clipboard functionality for campaign ID
+    - _Requirements: 1.3_
+  - [ ]* 4.4 Write property tests for parseAdRequirements persistence
+    - **Property 3: Campaign ID Present in Response**
+    - **Validates: Requirements 1.3**
+
+- [x] 5. Update conductAdResearch tool with persistence
+  - [x] 5.1 Update ConductAdResearchInputSchema
+    - Add optional campaignId field
+    - Make campaignParameters optional (required if no campaignId)
+    - Add refinement to ensure at least one is provided
+    - _Requirements: 2.1, 2.4_
+  - [x] 5.2 Update conductAdResearch tool implementation
+    - Modify `src/tools/conduct-ad-research.ts`
+    - If campaignId: retrieve parameters from database
+    - If both provided: use inline params, update stored record
+    - Store research report after generation
+    - _Requirements: 2.1, 2.2, 2.4_
+  - [x] 5.3 Update ad-research-ui to display campaign ID
+    - Modify `src/utils/ad-research-ui.ts`
+    - Add campaign ID in report header
+    - _Requirements: 2.2_
+  - [ ]* 5.4 Write property tests for conductAdResearch persistence
+    - **Property 7: Research Storage and Retrieval**
+    - **Property 8: Inline Parameters Override Stored**
+    - **Validates: Requirements 2.2, 2.4**
+
+- [x] 6. Update generateAdCopy tool with persistence
+  - [x] 6.1 Update GenerateAdCopyInputSchema
+    - Add optional campaignId field
+    - Make campaignParameters and campaignReport optional
+    - Add refinement for campaignId OR campaignParameters
+    - _Requirements: 3.1_
+  - [x] 6.2 Update generateAdCopy tool implementation
+    - Modify `src/tools/generate-ad-copy.ts`
+    - If campaignId: retrieve parameters and optional research
+    - Store ad copy result after generation
+    - Handle case where research doesn't exist
+    - _Requirements: 3.1, 3.2, 3.3_
+  - [x] 6.3 Update ad-copy-ui to display campaign ID and add selection
+    - Modify `src/utils/ad-copy-ui.ts`
+    - Add campaign ID in header
+    - Add selection buttons that call selectAdCopyVariation
+    - _Requirements: 3.2, 4.3_
+  - [ ]* 6.4 Write property tests for generateAdCopy persistence
+    - **Property 9: Ad Copy Retrieves Parameters and Research**
+    - **Property 10: Ad Copy Storage Round-Trip**
+    - **Property 11: Ad Copy Generation Without Research**
+    - **Validates: Requirements 3.1, 3.2, 3.3, 3.4**
+
+- [x] 7. Checkpoint - Ensure mid-workflow tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 8. Update generateAdImages tool with persistence
+  - [x] 8.1 Update GenerateAdImagesInputSchema
+    - Add optional campaignId field
+    - Make campaignParameters, campaignReport, selectedAdCopy optional
+    - Add refinement for campaignId OR campaignParameters
+    - _Requirements: 4.1_
+  - [x] 8.2 Update generateAdImages tool implementation
+    - Modify `src/tools/generate-ad-images.ts`
+    - If campaignId: retrieve parameters, research, and ad copy
+    - Store image result after generation
+    - Handle cases where research or ad copy don't exist
+    - _Requirements: 4.1, 4.2, 4.4_
+  - [x] 8.3 Update ad-images-ui to display campaign ID and add selection
+    - Modify `src/utils/ad-images-ui.ts`
+    - Add campaign ID in header
+    - Add selection buttons that call selectImageVariation
+    - _Requirements: 4.2, 4.3_
+  - [ ]* 8.4 Write property tests for generateAdImages persistence
+    - **Property 12: Images Retrieve All Prior Components**
+    - **Property 13: Image Storage Round-Trip**
+    - **Property 14: Ad Copy Selection Persisted**
+    - **Validates: Requirements 4.1, 4.2, 4.3**
+
+- [x] 9. Update generateMixedMediaCreative tool with persistence
+  - [x] 9.1 Update GenerateMixedMediaInputSchema
+    - Add optional campaignId field
+    - Make selectedImage, adCopy, platform optional when campaignId provided
+    - Add refinement for campaignId OR (selectedImage AND adCopy AND platform)
+    - _Requirements: 5.1_
+  - [x] 9.2 Update generateMixedMediaCreative tool implementation
+    - Modify `src/tools/generate-mixed-media.ts`
+    - If campaignId: retrieve selected image and ad copy from database
+    - Validate required assets exist, throw MissingAssetsError if not
+    - Store mixed media result after generation
+    - _Requirements: 5.1, 5.2, 5.3, 5.4_
+  - [x] 9.3 Update mixed-media-ui to display campaign ID
+    - Modify `src/utils/mixed-media-ui.ts`
+    - Add campaign ID in header
+    - Show source variation references
+    - _Requirements: 5.2, 5.4_
+  - [ ]* 9.4 Write property tests for generateMixedMediaCreative persistence
+    - **Property 15: Mixed Media Retrieves Selected Assets**
+    - **Property 16: Mixed Media Storage Round-Trip**
+    - **Validates: Requirements 5.1, 5.2, 5.4**
+
+- [x] 10. Create getCampaign tool
+  - [x] 10.1 Create getCampaign tool
+    - Create `src/tools/get-campaign.ts`
+    - Accept campaignId parameter
+    - Return complete campaign data with all components
+    - Include completion status for each component
+    - _Requirements: 6.1, 6.4_
+  - [x] 10.2 Create campaign-ui for getCampaign
+    - Create `src/utils/campaign-ui.ts`
+    - Display all campaign components with timestamps
+    - Show completion status indicators
+    - Add navigation to regenerate individual components
+    - _Requirements: 6.1, 6.2, 6.4_
+  - [x] 10.3 Register getCampaign tool in server
+    - Update `src/index.ts` to import and register getCampaign tool
+    - _Requirements: 6.1_
+  - [ ]* 10.4 Write property tests for getCampaign
+    - **Property 17: getCampaign Returns All Components**
+    - **Property 18: Component Timestamps Present**
+    - **Property 19: Completion Status Derivable**
+    - **Validates: Requirements 6.1, 6.2, 6.4**
+
+- [ ] 11. Update server initialization
+  - [x] 11.1 Add database initialization to server startup
+    - Update `src/index.ts` to connect to database on startup
+    - Run migrations before starting HTTP server
+    - Add graceful shutdown to close database connections
+    - _Requirements: 7.4_
+  - [x] 11.2 Add health check endpoint for database
+    - Update health check to include database connectivity status
+    - _Requirements: 7.4_
+
+- [x] 12. Final Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.

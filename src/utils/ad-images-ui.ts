@@ -5,7 +5,7 @@ import { AdImagesResult } from '../schemas/ad-images.js';
  * Create a UIResource for displaying ad image variations
  * Shows both variations side-by-side with selection buttons
  */
-export function createAdImagesUI(result: AdImagesResult) {
+export function createAdImagesUI(result: AdImagesResult, campaignId?: string) {
   const variationA = result.variations.find(v => v.variation_id === 'A');
   const variationB = result.variations.find(v => v.variation_id === 'B');
 
@@ -82,6 +82,38 @@ export function createAdImagesUI(result: AdImagesResult) {
         align-items: center;
         gap: 5px;
       }
+
+      .campaign-id-banner {
+        background: var(--bg-tertiary);
+        padding: 10px 15px;
+        border-radius: 6px;
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--accent-blue);
+      }
+      .campaign-id-label {
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 13px;
+      }
+      .campaign-id-value {
+        font-family: 'Courier New', monospace;
+        background: var(--bg-primary);
+        padding: 3px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+        color: var(--accent-blue);
+      }
+      .copy-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        padding: 2px 6px;
+      }
+      .copy-btn:hover { opacity: 0.7; }
 
       .variations-grid {
         display: grid;
@@ -258,6 +290,13 @@ export function createAdImagesUI(result: AdImagesResult) {
           ${result.platform ? `<div class="meta-item"><strong>Platform:</strong> ${result.platform}</div>` : ''}
           ${result.target_audience ? `<div class="meta-item"><strong>Audience:</strong> ${result.target_audience}</div>` : ''}
         </div>
+        ${campaignId ? `
+        <div class="campaign-id-banner">
+          <span class="campaign-id-label">Campaign ID:</span>
+          <code class="campaign-id-value">${campaignId}</code>
+          <button class="copy-btn" onclick="copyToClipboard('${campaignId}')">📋</button>
+        </div>
+        ` : ''}
       </div>
 
       <div class="recommendation-section">
@@ -327,26 +366,75 @@ export function createAdImagesUI(result: AdImagesResult) {
     </div>
 
     <script>
+      const CAMPAIGN_ID = ${campaignId ? `'${campaignId}'` : 'null'};
+
+      function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+          const btn = document.querySelector('.copy-btn');
+          if (btn) {
+            btn.textContent = '✓';
+            setTimeout(() => { btn.textContent = '📋'; }, 2000);
+          }
+        });
+      }
+
       function selectVariation(variationId) {
         const variation = variationId === 'A' ? ${JSON.stringify(variationA)} : ${JSON.stringify(variationB)};
+        const adCopy = ${result.selected_ad_copy ? JSON.stringify(result.selected_ad_copy) : 'null'};
         
-        // Prompt LLM to generate mixed media creative with selected image
-        // LLM has conversation context and can provide the ad copy
-        window.parent.postMessage({
-          type: 'prompt',
-          payload: {
-            prompt: 'I selected Image Variation ' + variationId + ' for the mixed media creative. Here is the selected image data: ' + JSON.stringify(variation) + '. Please call generateMixedMediaCreative with this image and the ad copy I selected earlier.'
-          }
-        }, '*');
+        if (CAMPAIGN_ID) {
+          // Use campaign ID - mixed media tool will retrieve data from database
+          window.parent.postMessage({
+            type: 'tool',
+            payload: {
+              toolName: 'generateMixedMediaCreative',
+              params: {
+                campaignId: CAMPAIGN_ID,
+                selectedImageVariation: variationId
+              }
+            }
+          }, '*');
+        } else if (adCopy) {
+          // Use inline data
+          window.parent.postMessage({
+            type: 'tool',
+            payload: {
+              toolName: 'generateMixedMediaCreative',
+              params: {
+                selectedImage: variation,
+                adCopy: adCopy,
+                platform: ${JSON.stringify(result.platform || 'tiktok')}
+              }
+            }
+          }, '*');
+        } else {
+          // Prompt LLM to provide ad copy
+          window.parent.postMessage({
+            type: 'prompt',
+            payload: {
+              prompt: 'I selected Image Variation ' + variationId + '. Please call generateMixedMediaCreative with this image and the ad copy.'
+            }
+          }, '*');
+        }
       }
 
       function regenerateImages() {
-        window.parent.postMessage({
-          type: 'prompt',
-          payload: {
-            prompt: 'Please regenerate the ad images with different variations.'
-          }
-        }, '*');
+        if (CAMPAIGN_ID) {
+          window.parent.postMessage({
+            type: 'tool',
+            payload: {
+              toolName: 'generateAdImages',
+              params: { campaignId: CAMPAIGN_ID }
+            }
+          }, '*');
+        } else {
+          window.parent.postMessage({
+            type: 'prompt',
+            payload: {
+              prompt: 'Please regenerate the ad images with different variations.'
+            }
+          }, '*');
+        }
       }
     </script>
   `;
@@ -367,13 +455,18 @@ export function createAdImagesUI(result: AdImagesResult) {
  */
 export function createAdImagesErrorUI(
   error: Error,
-  errorType: 'validation' | 'api' | 'timeout' | 'unknown' = 'unknown'
+  errorType: 'validation' | 'api' | 'timeout' | 'not_found' | 'unknown' = 'unknown'
 ) {
   const errorMessages = {
     validation: {
       title: 'Invalid Input',
       message: 'The input parameters could not be validated.',
       icon: '⚠️'
+    },
+    not_found: {
+      title: 'Campaign Not Found',
+      message: 'The specified campaign ID was not found.',
+      icon: '🔍'
     },
     api: {
       title: 'Image Generation Failed',

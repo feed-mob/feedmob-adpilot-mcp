@@ -68,11 +68,16 @@ export type AdImagesResult = z.infer<typeof AdImagesResultSchema>;
 
 /**
  * Schema for generate ad images tool input
+ * Accepts either campaignId (to retrieve from database) or inline parameters
  */
 export const GenerateAdImagesInputSchema = z.object({
-  campaignParameters: CampaignParametersSchema,
+  campaignId: z.string().uuid('Campaign ID must be a valid UUID').optional(),
+  campaignParameters: CampaignParametersSchema.optional(),
   campaignReport: CampaignReportSchema.optional(),
   selectedAdCopy: AdCopyVariationSchema.optional()
-});
+}).refine(
+  data => data.campaignId || data.campaignParameters,
+  { message: 'Either campaignId or campaignParameters must be provided' }
+);
 
 export type GenerateAdImagesInput = z.infer<typeof GenerateAdImagesInputSchema>;

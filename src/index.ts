@@ -5,6 +5,8 @@ import { conductAdResearchTool } from './tools/conduct-ad-research.js';
 import { generateAdCopyTool } from './tools/generate-ad-copy.js';
 import { generateAdImagesTool } from './tools/generate-ad-images.js';
 import { generateMixedMediaCreativeTool } from './tools/generate-mixed-media.js';
+import { getCampaignTool } from './tools/get-campaign.js';
+import { db } from './services/database.js';
 
 // Initialize FastMCP server
 const server = new FastMCP({
@@ -18,19 +20,51 @@ server.addTool(conductAdResearchTool);
 server.addTool(generateAdCopyTool);
 server.addTool(generateAdImagesTool);
 server.addTool(generateMixedMediaCreativeTool);
+server.addTool(getCampaignTool);
 
-console.log('✅ Registered tools: parseAdRequirements, conductAdResearch, generateAdCopy, generateAdImages, generateMixedMediaCreative');
+console.log('✅ Registered tools: parseAdRequirements, conductAdResearch, generateAdCopy, generateAdImages, generateMixedMediaCreative, getCampaign');
 
 const host = process.env.FASTMCP_HOST || '0.0.0.0';
 
-// Start server with HTTP streaming transport
-server.start({
-  transportType: "httpStream",
-  httpStream: {
-    host,
-    port: 8080,
-    endpoint: "/mcp"
+// Initialize database and start server
+async function start() {
+  try {
+    // Connect to database
+    await db.connect();
+    console.log('✅ Database connected');
+    
+    // Run migrations
+    await db.runMigrations();
+    console.log('✅ Database migrations complete');
+    
+    // Start server with HTTP streaming transport
+    server.start({
+      transportType: "httpStream",
+      httpStream: {
+        host,
+        port: 8080,
+        endpoint: "/mcp"
+      }
+    });
+
+    console.log(`🚀 FeedMob AdPilot MCP Server started on http://${host}:8080/mcp`);
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
   }
+}
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('\n🛑 Shutting down...');
+  await db.disconnect();
+  process.exit(0);
 });
 
-console.log(`🚀 FeedMob AdPilot MCP Server started on http://${host}:8080/mcp`);
+process.on('SIGTERM', async () => {
+  console.log('\n🛑 Shutting down...');
+  await db.disconnect();
+  process.exit(0);
+});
+
+start();

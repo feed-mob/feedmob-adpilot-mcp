@@ -1,40 +1,71 @@
 import { z } from 'zod';
 import { GenerateAdImagesInputSchema } from '../schemas/ad-images.js';
+import type { CampaignParameters } from '../schemas/campaign-params.js';
+import type { CampaignReport } from '../schemas/ad-research.js';
+import type { AdCopyVariation } from '../schemas/ad-copy.js';
 import { adImagesAgent } from '../services/ad-images-agent.js';
 import { createAdImagesUI, createAdImagesErrorUI } from '../utils/ad-images-ui.js';
+import { campaignService } from '../services/campaign.js';
+import { CampaignNotFoundError } from '../errors/campaign-errors.js';
 
-/**
- * MCP tool for generating ad image variations
- * 
- * Generates two distinct image variations using Google Gemini API
- * based on campaign parameters and optional research insights.
- */
 export const generateAdImagesTool = {
   name: 'generateAdImages',
-  description: 'Generate two distinct AI-powered image variations for advertising campaigns using Google Gemini. Creates platform-optimized visuals based on campaign parameters and research insights. Returns interactive UI for comparing and selecting variations.',
+  description: 'Generate two AI-powered image variations. Accepts campaignId or inline parameters.',
   parameters: GenerateAdImagesInputSchema,
   execute: async (args: z.infer<typeof GenerateAdImagesInputSchema>) => {
     try {
-      // Validate input
       const validated = GenerateAdImagesInputSchema.parse(args);
       
-      // Call agent service to generate images
-      const agentResult = await adImagesAgent.generateImages(
-        validated.campaignParameters,
-        validated.campaignReport
-      );
+      let campaignId: string | undefined = validated.campaignId;
+      let campaignParameters: CampaignParameters;
+      let campaignReport: CampaignReport | undefined;
+      let selectedAdCopy: AdCopyVariation | undefined = validated.selectedAdCopy;
+      
+      if (validated.campaignId) {
+        const campaign = await campaignService.getCampaignOrThrow(validated.campaignId);
+        if (!campaign.parameters) {
+          throw new Error('Campaign has no parameters stored.');
+        }
+        campaignParameters = campaign.parameters;
+        campaignReport = campaign.research ?? undefined;
+        
+        // Use stored ad copy selection if available and not provided inline
+        if (!selectedAdCopy && campaign.ad_copy && campaign.selected_ad_copy_variation) {
+          const variation = campaign.ad_copy.variations.find(
+            v => v.variation_id === campaign.selected_ad_copy_variation
+          );
+          if (variation) selectedAdCopy = variation;
+        }
+        
+        // Store ad copy selection if provided
+        if (validated.selectedAdCopy && campaign.id) {
+          await campaignService.selectAdCopyVariation(campaign.id, validated.selectedAdCopy.variation_id);
+        }
+      } else if (validated.campaignParameters) {
+        campaignParameters = validated.campaignParameters;
+        campaignReport = validated.campaignReport;
+      } else {
+        throw new Error('Either campaignId or campaignParameters must be provided');
+      }
+      
+      const agentResult = await adImagesAgent.generateImages(campaignParameters, campaignReport);
+      const result = selectedAdCopy ? { ...agentResult, selected_ad_copy: selectedAdCopy } : agentResult;
 
-      // Attach selected ad copy to result for downstream use (immutable)
-      const result = validated.selectedAdCopy 
-        ? { ...agentResult, selected_ad_copy: validated.selectedAdCopy }
-        : agentResult;
       
-      // Generate UI
-      const uiResource = createAdImagesUI(result);
+      // Store result if we have a campaign ID
+      if (campaignId) {
+        try {
+          await campaignService.updateImages(campaignId, result);
+        } catch (dbError) {
+          console.error('Failed to store images:', dbError);
+        }
+      }
       
-      // Create text summary for LLM
+      const uiResource = createAdImagesUI(result, campaignId);
+      
       const textSummary = `Generated two ad image variations:
 
+${campaignId ? `Campaign ID: ${campaignId}\n` : ''}
 **Variation A** (${result.recommended_variation === 'A' ? '⭐ Recommended' : ''}):
 - Image URL: ${result.variations[0].image_url}
 - Visual Approach: ${result.variations[0].visual_approach}
@@ -46,10 +77,8 @@ export const generateAdImagesTool = {
 - Dimensions: ${result.variations[1].dimensions.width}×${result.variations[1].dimensions.height}
 
 **Recommendation**: ${result.recommendation_rationale}
-
-The user can now select their preferred variation to proceed with mixed media creative generation.`;
+${campaignId ? '\nSelect a variation to proceed with mixed media creative generation.' : ''}`;
       
-      // Return both text and UI
       return {
         content: [
           { type: 'text' as const, text: textSummary },
@@ -57,24 +86,20 @@ The user can now select their preferred variation to proceed with mixed media cr
         ]
       };
     } catch (error) {
-      // Categorize error type
-      let errorType: 'validation' | 'api' | 'timeout' | 'unknown' = 'unknown';
+      let errorType: 'validation' | 'api' | 'timeout' | 'not_found' | 'unknown' = 'unknown';
       
       if (error instanceof z.ZodError) {
         errorType = 'validation';
+      } else if (error instanceof CampaignNotFoundError) {
+        errorType = 'not_found';
       } else if (error instanceof Error) {
         if (error.message.includes('timeout') || error.message.includes('took too long')) {
           errorType = 'timeout';
-        } else if (
-          error.message.includes('Gemini') ||
-          error.message.includes('API') ||
-          error.message.includes('generate')
-        ) {
+        } else if (error.message.includes('Gemini') || error.message.includes('API')) {
           errorType = 'api';
         }
       }
       
-      // Generate error UI
       const errorUI = createAdImagesErrorUI(
         error instanceof Error ? error : new Error('Unknown error occurred'),
         errorType

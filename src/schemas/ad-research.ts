@@ -155,10 +155,14 @@ export type CampaignReport = z.infer<typeof CampaignReportSchema>;
 
 /**
  * Schema for conduct ad research tool input
- * Validates that campaign parameters are provided
+ * Accepts either campaignId (to retrieve from database) or inline campaignParameters
  */
 export const ConductAdResearchInputSchema = z.object({
-  campaignParameters: CampaignParametersSchema
-});
+  campaignId: z.string().uuid('Campaign ID must be a valid UUID').optional(),
+  campaignParameters: CampaignParametersSchema.optional()
+}).refine(
+  data => data.campaignId || data.campaignParameters,
+  { message: 'Either campaignId or campaignParameters must be provided' }
+);
 
 export type ConductAdResearchInput = z.infer<typeof ConductAdResearchInputSchema>;

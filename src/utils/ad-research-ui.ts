@@ -5,7 +5,7 @@ import { CampaignParameters } from '../schemas/campaign-params.js';
 /**
  * Creates a UIResource displaying comprehensive campaign research report
  */
-export function createResearchReportUI(report: CampaignReport, campaignParameters?: CampaignParameters) {
+export function createResearchReportUI(report: CampaignReport, campaignParameters?: CampaignParameters, campaignId?: string) {
   const { executive_summary, audience_insights, platform_strategy, creative_direction, 
           budget_allocation, performance_metrics, implementation_timeline, sources } = report;
 
@@ -301,6 +301,39 @@ export function createResearchReportUI(report: CampaignReport, campaignParameter
       .report-meta {
         font-size: 14px;
         color: var(--text-secondary);
+      }
+      .campaign-id-banner {
+        background: var(--bg-tertiary);
+        padding: 10px 15px;
+        border-radius: 6px;
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--accent-blue);
+      }
+      .campaign-id-label {
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 13px;
+      }
+      .campaign-id-value {
+        font-family: 'Courier New', monospace;
+        background: var(--bg-primary);
+        padding: 3px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+        color: var(--accent-blue);
+      }
+      .copy-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        padding: 2px 6px;
+      }
+      .copy-btn:hover {
+        opacity: 0.7;
       }
       .report-section {
         background: var(--bg-primary);
@@ -628,6 +661,13 @@ export function createResearchReportUI(report: CampaignReport, campaignParameter
           ${report.campaign_name ? `<strong>${report.campaign_name}</strong> • ` : ''}
           Generated ${new Date(report.generated_at).toLocaleString()}
         </div>
+        ${campaignId ? `
+        <div class="campaign-id-banner">
+          <span class="campaign-id-label">Campaign ID:</span>
+          <code class="campaign-id-value">${campaignId}</code>
+          <button class="copy-btn" onclick="copyToClipboard('${campaignId}')">📋</button>
+        </div>
+        ` : ''}
       </div>
       
       ${executiveSummarySection}
@@ -650,15 +690,27 @@ export function createResearchReportUI(report: CampaignReport, campaignParameter
         header.classList.toggle('collapsed');
       }
 
+      function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+          const btn = document.querySelector('.copy-btn');
+          if (btn) {
+            btn.textContent = '✓';
+            setTimeout(() => { btn.textContent = '📋'; }, 2000);
+          }
+        });
+      }
+
       function handleProceedToCopy() {
+        const params = ${campaignId ? `{ campaignId: '${campaignId}' }` : `{
+          campaignParameters: ${JSON.stringify(campaignParameters || {})},
+          campaignReport: ${JSON.stringify(report)}
+        }`};
+        
         window.parent.postMessage({
           type: 'tool',
           payload: {
             toolName: 'generateAdCopy',
-            params: {
-              campaignParameters: ${JSON.stringify(campaignParameters || {})},
-              campaignReport: ${JSON.stringify(report)}
-            }
+            params
           }
         }, '*');
       }
@@ -702,7 +754,7 @@ export function createResearchReportUI(report: CampaignReport, campaignParameter
  */
 export function createResearchErrorUI(
   error: Error,
-  errorType: 'validation' | 'agent' | 'search' | 'timeout' | 'unknown' = 'unknown'
+  errorType: 'validation' | 'agent' | 'search' | 'timeout' | 'not_found' | 'unknown' = 'unknown'
 ) {
   const errorMessages = {
     validation: {
@@ -724,6 +776,11 @@ export function createResearchErrorUI(
       title: 'Research Timeout',
       message: 'The research took too long to complete. Please try again.',
       icon: '⏱️'
+    },
+    not_found: {
+      title: 'Campaign Not Found',
+      message: 'The specified campaign ID was not found. Please check the ID or create a new campaign.',
+      icon: '🔍'
     },
     unknown: {
       title: 'Unexpected Error',

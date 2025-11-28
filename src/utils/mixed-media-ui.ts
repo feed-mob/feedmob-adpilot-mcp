@@ -5,7 +5,7 @@ import { MixedMediaResult } from '../schemas/mixed-media.js';
  * Create a UIResource for displaying mixed media creative preview
  * Shows composite image with ad copy overlay and export options
  */
-export function createMixedMediaUI(result: MixedMediaResult) {
+export function createMixedMediaUI(result: MixedMediaResult, campaignId?: string) {
   const htmlContent = `
     <style>
       :root {
@@ -62,6 +62,38 @@ export function createMixedMediaUI(result: MixedMediaResult) {
       .header-meta {
         font-size: 14px;
         color: var(--text-secondary);
+      }
+      .campaign-id-banner {
+        background: var(--bg-tertiary);
+        padding: 10px 15px;
+        border-radius: 6px;
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--accent-blue);
+      }
+      .campaign-id-label {
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 13px;
+      }
+      .campaign-id-value {
+        font-family: 'Courier New', monospace;
+        background: var(--bg-primary);
+        padding: 3px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+        color: var(--accent-blue);
+      }
+      .copy-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        padding: 2px 6px;
+      }
+      .copy-btn:hover { opacity: 0.7;
         display: flex;
         gap: 15px;
         flex-wrap: wrap;
@@ -257,6 +289,13 @@ export function createMixedMediaUI(result: MixedMediaResult) {
           <div class="meta-item"><strong>Format:</strong> ${result.dimensions.width}×${result.dimensions.height}</div>
           <div class="meta-item"><strong>Source:</strong> Variation ${result.source_image_variation}</div>
         </div>
+        ${campaignId ? `
+        <div class="campaign-id-banner">
+          <span class="campaign-id-label">Campaign ID:</span>
+          <code class="campaign-id-value">${campaignId}</code>
+          <button class="copy-btn" onclick="copyToClipboard('${campaignId}')">📋</button>
+        </div>
+        ` : ''}
       </div>
 
       <div class="preview-section">
@@ -318,6 +357,18 @@ export function createMixedMediaUI(result: MixedMediaResult) {
     </div>
 
     <script>
+      const CAMPAIGN_ID = ${campaignId ? `'${campaignId}'` : 'null'};
+
+      function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+          const btn = document.querySelector('.copy-btn');
+          if (btn) {
+            btn.textContent = '✓';
+            setTimeout(() => { btn.textContent = '📋'; }, 2000);
+          }
+        });
+      }
+
       function downloadPNG() {
         const link = document.createElement('a');
         link.href = '${result.composite_image_url}';
@@ -335,21 +386,41 @@ export function createMixedMediaUI(result: MixedMediaResult) {
       }
 
       function tryDifferentCopy() {
-        window.parent.postMessage({
-          type: 'prompt',
-          payload: {
-            prompt: 'Would you like to generate different ad copy for this image?'
-          }
-        }, '*');
+        if (CAMPAIGN_ID) {
+          window.parent.postMessage({
+            type: 'tool',
+            payload: {
+              toolName: 'generateAdCopy',
+              params: { campaignId: CAMPAIGN_ID }
+            }
+          }, '*');
+        } else {
+          window.parent.postMessage({
+            type: 'prompt',
+            payload: {
+              prompt: 'Would you like to generate different ad copy for this image?'
+            }
+          }, '*');
+        }
       }
 
       function tryDifferentImage() {
-        window.parent.postMessage({
-          type: 'prompt',
-          payload: {
-            prompt: 'Would you like to try a different image variation?'
-          }
-        }, '*');
+        if (CAMPAIGN_ID) {
+          window.parent.postMessage({
+            type: 'tool',
+            payload: {
+              toolName: 'generateAdImages',
+              params: { campaignId: CAMPAIGN_ID }
+            }
+          }, '*');
+        } else {
+          window.parent.postMessage({
+            type: 'prompt',
+            payload: {
+              prompt: 'Would you like to try a different image variation?'
+            }
+          }, '*');
+        }
       }
     </script>
   `;
@@ -370,7 +441,7 @@ export function createMixedMediaUI(result: MixedMediaResult) {
  */
 export function createMixedMediaErrorUI(
   error: Error,
-  errorType: 'validation' | 'generation' | 'unknown' = 'unknown'
+  errorType: 'validation' | 'generation' | 'not_found' | 'missing_assets' | 'unknown' = 'unknown'
 ) {
   const errorMessages = {
     validation: {
@@ -382,6 +453,16 @@ export function createMixedMediaErrorUI(
       title: 'Generation Failed',
       message: 'We encountered an issue generating the mixed media creative.',
       icon: '❌'
+    },
+    not_found: {
+      title: 'Campaign Not Found',
+      message: 'The specified campaign ID was not found.',
+      icon: '🔍'
+    },
+    missing_assets: {
+      title: 'Missing Assets',
+      message: 'The campaign is missing required assets (images or ad copy). Please generate them first.',
+      icon: '📦'
     },
     unknown: {
       title: 'Unexpected Error',

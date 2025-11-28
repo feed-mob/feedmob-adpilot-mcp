@@ -22,7 +22,7 @@ const FIELD_LABELS: Record<keyof CampaignParameters, string> = {
 /**
  * Creates a UIResource displaying campaign parameters with editable fields for missing info
  */
-export function createParametersUI(result: ValidationResult) {
+export function createParametersUI(result: ValidationResult, campaignId?: string) {
   const { parameters } = result;
   const validFieldNames = Object.keys(FIELD_LABELS);
   const missingFields = result.missingFields
@@ -63,9 +63,17 @@ export function createParametersUI(result: ValidationResult) {
     })
     .join('');
 
+  const campaignIdDisplay = campaignId ? `
+    <div class="campaign-id-banner">
+      <span class="campaign-id-label">Campaign ID:</span>
+      <code class="campaign-id-value">${campaignId}</code>
+      <button class="copy-button" onclick="copyToClipboard('${campaignId}')">📋 Copy</button>
+    </div>
+  ` : '';
+
   const confirmButton = success ? `
     <button class="confirm-button" onclick="handleConfirm()">
-      ✓ Confirm and Proceed
+      ✓ Confirm and Proceed to Research
     </button>
   ` : `
     <div class="missing-notice">
@@ -202,32 +210,83 @@ export function createParametersUI(result: ValidationResult) {
         color: var(--text-primary);
         margin-bottom: 15px;
       }
+      .campaign-id-banner {
+        background: var(--bg-tertiary);
+        padding: 12px 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid var(--accent-blue);
+      }
+      .campaign-id-label {
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 14px;
+      }
+      .campaign-id-value {
+        font-family: 'Courier New', monospace;
+        background: var(--bg-primary);
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 13px;
+        color: var(--accent-blue);
+        flex: 1;
+      }
+      .copy-button {
+        background: var(--accent-blue);
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+      }
+      .copy-button:hover {
+        opacity: 0.9;
+      }
     </style>
     <div class="parameters-container">
       <div class="parameters-title">📋 Campaign Parameters</div>
       <div class="parameters-subtitle">
         ${success ? 'All information collected!' : `${missingFields.length} field(s) still need information`}
       </div>
+      ${campaignIdDisplay}
       <div class="param-grid">
         ${parameterCards}
       </div>
       ${confirmButton}
     </div>
     <script>
+      const CAMPAIGN_ID = ${campaignId ? `'${campaignId}'` : 'null'};
+
+      function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+          const btn = document.querySelector('.copy-button');
+          if (btn) {
+            btn.textContent = '✓ Copied!';
+            setTimeout(() => { btn.textContent = '📋 Copy'; }, 2000);
+          }
+        });
+      }
+
       function handleConfirm() {
+        const params = CAMPAIGN_ID 
+          ? { campaignId: CAMPAIGN_ID }
+          : { campaignParameters: ${JSON.stringify(parameters)} };
+        
         window.parent.postMessage({
           type: 'tool',
           payload: {
             toolName: 'conductAdResearch',
-            params: {
-              campaignParameters: ${JSON.stringify(parameters)}
-            }
+            params
           }
         }, '*');
       }
 
       function handleSubmit() {
-        // Collect all input values
         const inputs = document.querySelectorAll('.param-input');
         const updatedFields = {};
         let hasEmptyFields = false;
@@ -250,11 +309,6 @@ export function createParametersUI(result: ValidationResult) {
           return;
         }
 
-        // Merge with existing parameters
-        const allParameters = ${JSON.stringify(parameters)};
-        Object.assign(allParameters, updatedFields);
-
-        // Build a natural language request text from the updated fields
         const fieldDescriptions = Object.entries(updatedFields).map(([key, value]) => {
           const label = ${JSON.stringify(FIELD_LABELS)}[key] || key;
           return \`\${label}: \${value}\`;
@@ -262,12 +316,16 @@ export function createParametersUI(result: ValidationResult) {
 
         const requestText = \`Updated campaign information: \${fieldDescriptions}\`;
 
-        // Call parseAdRequirements tool again with updated information
+        const params = { requestText };
+        if (CAMPAIGN_ID) {
+          params.campaignId = CAMPAIGN_ID;
+        }
+
         window.parent.postMessage({
           type: 'tool',
           payload: {
             toolName: 'parseAdRequirements',
-            params: { requestText }
+            params
           }
         }, '*');
       }
@@ -373,7 +431,7 @@ export function createMissingFieldUI(field: string, examples: string[]) {
 /**
  * Creates an error UIResource
  */
-export function createErrorUI(error: Error, errorType: 'validation' | 'agent' | 'timeout' | 'unknown' = 'unknown') {
+export function createErrorUI(error: Error, errorType: 'validation' | 'agent' | 'timeout' | 'not_found' | 'unknown' = 'unknown') {
   const errorMessages = {
     validation: {
       title: 'Invalid Input',
@@ -389,6 +447,11 @@ export function createErrorUI(error: Error, errorType: 'validation' | 'agent' | 
       title: 'Request Timeout',
       message: 'The request took too long to process. Please try again with a simpler description.',
       icon: '⏱️'
+    },
+    not_found: {
+      title: 'Campaign Not Found',
+      message: 'The specified campaign ID was not found. Please check the ID or create a new campaign.',
+      icon: '🔍'
     },
     unknown: {
       title: 'Unexpected Error',
