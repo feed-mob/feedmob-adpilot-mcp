@@ -304,7 +304,8 @@ export function createAdCopyUI(result: AdCopyResult) {
                 time_period: null,
                 creative_direction: selectedVariation.body_copy,
                 other_details: 'Selected ad copy: ' + selectedVariation.headline + ' | CTA: ' + selectedVariation.cta
-              }
+              },
+              selectedAdCopy: selectedVariation
             }
           }
         }, '*');

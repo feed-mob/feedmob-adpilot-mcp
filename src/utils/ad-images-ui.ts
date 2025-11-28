@@ -330,14 +330,12 @@ export function createAdImagesUI(result: AdImagesResult) {
       function selectVariation(variationId) {
         const variation = variationId === 'A' ? ${JSON.stringify(variationA)} : ${JSON.stringify(variationB)};
         
+        // Prompt LLM to generate mixed media creative with selected image
+        // LLM has conversation context and can provide the ad copy
         window.parent.postMessage({
-          type: 'tool',
+          type: 'prompt',
           payload: {
-            toolName: 'generateMixedMediaCreative',
-            params: {
-              selectedImage: variation,
-              platform: ${JSON.stringify(result.platform || 'instagram_feed')}
-            }
+            prompt: 'I selected Image Variation ' + variationId + ' for the mixed media creative. Here is the selected image data: ' + JSON.stringify(variation) + '. Please call generateMixedMediaCreative with this image and the ad copy I selected earlier.'
           }
         }, '*');
       }
@@ -346,7 +344,7 @@ export function createAdImagesUI(result: AdImagesResult) {
         window.parent.postMessage({
           type: 'prompt',
           payload: {
-            prompt: 'Would you like to regenerate the ad images with different variations?'
+            prompt: 'Please regenerate the ad images with different variations.'
           }
         }, '*');
       }

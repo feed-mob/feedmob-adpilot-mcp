@@ -19,10 +19,15 @@ export const generateAdImagesTool = {
       const validated = GenerateAdImagesInputSchema.parse(args);
       
       // Call agent service to generate images
-      const result = await adImagesAgent.generateImages(
+      const agentResult = await adImagesAgent.generateImages(
         validated.campaignParameters,
         validated.campaignReport
       );
+
+      // Attach selected ad copy to result for downstream use (immutable)
+      const result = validated.selectedAdCopy 
+        ? { ...agentResult, selected_ad_copy: validated.selectedAdCopy }
+        : agentResult;
       
       // Generate UI
       const uiResource = createAdImagesUI(result);

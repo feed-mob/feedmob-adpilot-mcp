@@ -49,6 +49,16 @@
       "skills": [
         "./skills/generate-ad-copy/SKILL.md"
       ]
+    },
+    {
+      "name": "generate-mixed-media",
+      "source": "./generate-mixed-media",
+      "version": "1.0.0",
+      "description": "Combine ad images with copy to create platform-ready mixed media creatives",
+      "author": "FeedMob",
+      "skills": [
+        "./skills/generate-mixed-media/SKILL.md"
+      ]
     }
   ]
 }

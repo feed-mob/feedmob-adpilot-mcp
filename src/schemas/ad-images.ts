@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { CampaignParametersSchema } from './campaign-params.js';
 import { CampaignReportSchema } from './ad-research.js';
+import { AdCopyVariationSchema } from './ad-copy.js';
 
 /**
  * Platform-specific image dimensions
@@ -59,7 +60,8 @@ export const AdImagesResultSchema = z.object({
   recommended_variation: z.enum(['A', 'B'], {
     errorMap: () => ({ message: 'Recommended variation must be A or B' })
   }),
-  recommendation_rationale: z.string().min(1, 'Recommendation rationale must not be empty')
+  recommendation_rationale: z.string().min(1, 'Recommendation rationale must not be empty'),
+  selected_ad_copy: AdCopyVariationSchema.optional()
 });
 
 export type AdImagesResult = z.infer<typeof AdImagesResultSchema>;
@@ -69,7 +71,8 @@ export type AdImagesResult = z.infer<typeof AdImagesResultSchema>;
  */
 export const GenerateAdImagesInputSchema = z.object({
   campaignParameters: CampaignParametersSchema,
-  campaignReport: CampaignReportSchema.optional()
+  campaignReport: CampaignReportSchema.optional(),
+  selectedAdCopy: AdCopyVariationSchema.optional()
 });
 
 export type GenerateAdImagesInput = z.infer<typeof GenerateAdImagesInputSchema>;
