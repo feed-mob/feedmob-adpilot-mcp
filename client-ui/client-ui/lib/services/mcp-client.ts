@@ -119,8 +119,15 @@ export class MCPClientService {
 
   /**
    * Execute a tool on the MCP server
+   * @param name Tool name
+   * @param params Tool parameters
+   * @param timeoutMs Timeout in milliseconds (default: 15 minutes for long-running agent tasks)
    */
-  async callTool(name: string, params: Record<string, unknown>): Promise<ToolResult> {
+  async callTool(
+    name: string,
+    params: Record<string, unknown>,
+    timeoutMs: number = 15 * 60 * 1000
+  ): Promise<ToolResult> {
     if (!this.client) {
       return {
         content: [
@@ -135,16 +142,23 @@ export class MCPClientService {
 
     try {
       console.log(`🔧 Calling tool: ${name}`, params);
-      
-      const response = await this.client.callTool({
-        name,
-        arguments: params,
-      });
+
+      const response = await this.client.callTool(
+        {
+          name,
+          arguments: params,
+        },
+        undefined,
+        {
+          timeout: timeoutMs,
+        }
+      );
 
       // Convert MCP response to ToolResult
       const content: ToolResult['content'] = [];
+      const responseContent = (response.content || []) as Array<any>;
 
-      for (const item of response.content || []) {
+      for (const item of responseContent) {
         if (item.type === 'text') {
           content.push({
             type: 'text',
@@ -178,7 +192,7 @@ export class MCPClientService {
       console.log(`✅ Tool ${name} completed successfully`);
       return {
         content,
-        isError: response.isError || false,
+        isError: (response.isError as boolean) || false,
       };
     } catch (error: unknown) {
       const message =
