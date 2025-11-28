@@ -15,7 +15,7 @@ export function MessageItem({ message }: MessageItemProps) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-3xl rounded-lg p-4 ${
+        className={`w-full max-w-6xl rounded-lg p-4 ${
           isUser
             ? 'bg-blue-600 text-white'
             : message.role === 'tool'

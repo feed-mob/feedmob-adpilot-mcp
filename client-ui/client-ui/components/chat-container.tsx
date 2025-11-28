@@ -158,15 +158,78 @@ export function ChatContainer({ initialMessages = [], onMessagesChange }: ChatCo
               };
             });
           } else if (event.type === 'tool_use' && event.toolUse) {
+            const toolUseId = event.toolUse.toolUseId || `tool-${Date.now()}`;
+            const toolInput = {
+              ...(event.toolUse.input || {}),
+            };
+
+            // Fallback: if model didn't provide required requestText, use the user's message text
+            if (!toolInput.requestText && text) {
+              toolInput.requestText = text;
+            }
+
             addMessage({
-              id: `tool-${event.toolUse.toolUseId}`,
+              id: `tool-use-${toolUseId}`,
               role: 'assistant',
               content: [
                 { type: 'text', text: `Calling tool: ${event.toolUse.name}` },
-                { type: 'text', text: `Params: ${JSON.stringify(event.toolUse.input, null, 2)}` },
+                { type: 'text', text: `Params: ${JSON.stringify(toolInput, null, 2)}` },
               ],
               timestamp: Date.now(),
             });
+
+            try {
+              const toolResponse = await fetch('/api/mcp/tools', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  name: event.toolUse.name,
+                  params: toolInput,
+                }),
+              });
+
+              const toolResult = await toolResponse.json();
+
+              const resultContent =
+                toolResult?.content && Array.isArray(toolResult.content)
+                  ? toolResult.content.map((item: any) => {
+                      if (item.type === 'resource') {
+                        return {
+                          type: 'resource',
+                          resource: item.resource,
+                        };
+                      }
+                      return { type: 'text', text: item.text || '' };
+                    })
+                  : [{ type: 'text', text: 'No result returned from tool' }];
+
+              addMessage({
+                id: `tool-result-${toolUseId}`,
+                role: 'tool',
+                content: [
+                  {
+                    type: 'tool_result',
+                    toolUseId,
+                    content: resultContent,
+                  },
+                ],
+                timestamp: Date.now(),
+              });
+            } catch (toolError: any) {
+              addMessage({
+                id: `tool-error-${toolUseId}`,
+                role: 'assistant',
+                content: [
+                  {
+                    type: 'text',
+                    text: `Tool ${event.toolUse.name} failed: ${
+                      toolError?.message || 'Unknown error'
+                    }`,
+                  },
+                ],
+                timestamp: Date.now(),
+              });
+            }
           } else if (event.type === 'error' && event.error) {
             throw new Error(event.error as string);
           }

@@ -110,9 +110,10 @@ export function UIResourceMessage({ resource }: UIResourceMessageProps) {
             autoResizeIframe: true,
             style: {
               width: '100%',
-              minHeight: '200px',
+              minHeight: '300px',
               border: 'none',
-              borderRadius: '8px',
+              borderRadius: '10px',
+              overflow: 'hidden',
             },
           }}
         />
