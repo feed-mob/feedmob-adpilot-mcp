@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { randomUUID } from 'crypto';
 import { ParseAdRequirementsInputSchema } from '../schemas/campaign-params.js';
 import { adRequirementsAgent } from '../services/ad-requirements-agent.js';
 import { createParametersUI, createErrorUI } from '../utils/ad-requirements-ui.js';
@@ -20,15 +21,20 @@ export const parseAdRequirementsTool = {
       // Validate input
       const validated = ParseAdRequirementsInputSchema.parse(args);
       
+      // Generate or use existing campaign ID
+      const campaignId = validated.campaignId || randomUUID();
+      
       // Call agent service to parse requirements
       const result = await adRequirementsAgent.parseRequirements(validated.requestText);
       
-      // Generate UI for the result
-      const uiResource = createParametersUI(result);
+      // Generate UI for the result with campaign ID
+      const uiResource = createParametersUI(result, campaignId);
       
       // Create text summary for the LLM
       const { parameters } = result;
       const textSummary = `Parsed campaign requirements:
+
+Campaign ID: ${campaignId}
 
 Product/Service: ${parameters.product_or_service || 'Not specified'}
 Product URL: ${parameters.product_or_service_url || 'Not specified'}
