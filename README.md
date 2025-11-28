@@ -74,7 +74,7 @@ ANTHROPIC_MODEL=us.anthropic.claude-sonnet-4-20250514-v1:0
 npm run dev
 ```
 
-The server will start on `http://localhost:8080/mcp`.
+The server will start on `http://localhost:8080/mcp` (binds to `0.0.0.0` so you can reach it from containers or remote hosts). To bind to a different interface, set `FASTMCP_HOST`, e.g. `FASTMCP_HOST=127.0.0.1 npm run dev`.
 
 ### Test with MCP Inspector
 

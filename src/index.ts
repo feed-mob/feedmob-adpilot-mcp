@@ -21,13 +21,16 @@ server.addTool(generateMixedMediaCreativeTool);
 
 console.log('✅ Registered tools: parseAdRequirements, conductAdResearch, generateAdCopy, generateAdImages, generateMixedMediaCreative');
 
+const host = process.env.FASTMCP_HOST || '0.0.0.0';
+
 // Start server with HTTP streaming transport
 server.start({
   transportType: "httpStream",
   httpStream: {
+    host,
     port: 8080,
     endpoint: "/mcp"
   }
 });
 
-console.log('🚀 FeedMob AdPilot MCP Server started');
+console.log(`🚀 FeedMob AdPilot MCP Server started on http://${host}:8080/mcp`);
