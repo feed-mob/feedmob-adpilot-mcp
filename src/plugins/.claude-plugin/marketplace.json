@@ -59,6 +59,16 @@
       "skills": [
         "./skills/generate-mixed-media/SKILL.md"
       ]
+    },
+    {
+      "name": "manage-campaign",
+      "source": "./manage-campaign",
+      "version": "1.0.0",
+      "description": "Retrieve and manage advertising campaign state throughout the campaign lifecycle",
+      "author": "FeedMob",
+      "skills": [
+        "./skills/manage-campaign/SKILL.md"
+      ]
     }
   ]
 }

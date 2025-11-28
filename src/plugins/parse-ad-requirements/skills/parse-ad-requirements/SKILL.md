@@ -1,19 +1,21 @@
 ---
 name: parse-ad-requirements
-description: Extract structured advertising campaign parameters from natural language input provided by advertisers. This skill should be used when analyzing advertising requirements, campaign briefs, or ad requests that need to be converted into structured data. Identifies missing information and provides helpful guidance for completing campaign requirements.
+description: Extract structured advertising campaign parameters from natural language input provided by advertisers. This skill should be used when analyzing advertising requirements, campaign briefs, or ad requests that need to be converted into structured data. Supports both creating new campaigns and updating existing campaigns with additional information. Identifies missing information and provides helpful guidance for completing campaign requirements.
 ---
 
 # Parse Advertising Requirements
 
 ## Overview
 
-Extract structured advertising campaign parameters from natural language input provided by advertisers. Identify missing information and provide helpful guidance for completing campaign requirements.
+Extract structured advertising campaign parameters from natural language input provided by advertisers. Supports creating new campaigns and updating existing campaigns with additional information. Identify missing information and provide helpful guidance for completing campaign requirements.
 
 ## When to Use This Skill
 
 Use this skill when:
 - Analyzing advertising requirements or campaign briefs
 - Converting natural language ad requests into structured data
+- Creating a new advertising campaign from natural language input
+- Updating an existing campaign with additional information
 - Identifying missing or incomplete campaign information
 - Validating that all necessary advertising parameters are provided
 - Processing advertiser input for campaign setup
@@ -101,6 +103,15 @@ Return a JSON object with this structure:
 - Set `success` to `false` if any fields are missing
 - List all missing field names in the `missingFields` array
 - Optionally provide helpful suggestions for missing fields
+
+## Campaign Updates
+
+When updating an existing campaign (indicated by context mentioning a campaign ID):
+- Extract only the NEW information provided in the input
+- Set fields to their extracted values if new information is provided
+- Set fields to `null` if no new information is provided for that field
+- The system will automatically merge new values with existing campaign data
+- Only newly provided fields will overwrite existing values; null fields preserve existing data
 
 ## Extraction Rules
 
@@ -222,3 +233,5 @@ Return a JSON object with this structure:
 - The `success` field should reflect whether ALL required information is present
 - Be helpful and specific in suggestions
 - Maintain a professional, friendly tone when providing suggestions
+- When updating campaigns, only extract NEW information from the input
+- Null values in updates preserve existing campaign data (they don't delete it)

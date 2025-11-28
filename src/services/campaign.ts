@@ -13,14 +13,23 @@ import { CampaignNotFoundError } from '../errors/campaign-errors.js';
 class CampaignService {
   /**
    * Create a new campaign with initial parameters
+   * @param parameters - Campaign parameters
+   * @param id - Optional campaign ID (if not provided, database generates one)
    */
-  async createCampaign(parameters: CampaignParameters): Promise<Campaign> {
-    const rows = await db.query<Campaign>(
-      `INSERT INTO campaigns (parameters, parameters_updated_at)
-       VALUES ($1, NOW())
-       RETURNING *`,
-      [JSON.stringify(parameters)]
-    );
+  async createCampaign(parameters: CampaignParameters, id?: string): Promise<Campaign> {
+    const query = id
+      ? `INSERT INTO campaigns (id, parameters, parameters_updated_at)
+         VALUES ($1, $2, NOW())
+         RETURNING *`
+      : `INSERT INTO campaigns (parameters, parameters_updated_at)
+         VALUES ($1, NOW())
+         RETURNING *`;
+    
+    const params = id
+      ? [id, JSON.stringify(parameters)]
+      : [JSON.stringify(parameters)];
+
+    const rows = await db.query<Campaign>(query, params);
 
     if (rows.length === 0) {
       throw new Error('Failed to create campaign');
