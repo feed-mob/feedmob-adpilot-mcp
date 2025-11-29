@@ -1,5 +1,5 @@
-# Default image tag - override with IMAGE_TAG env var
-x-image-tag: &image-tag ${IMAGE_TAG:-latest}
+# Local development compose file - builds images from source
+# Usage: docker compose -f docker-compose.build.yaml up --build
 
 services:
   postgres:
@@ -23,35 +23,26 @@ services:
       start_period: 10s
 
   mcp-server:
-    image: ghcr.io/feedmob/feedmob_adpilot_mcp:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: feedmob-adpilot-mcp
     restart: unless-stopped
     environment:
-      # Database
       DATABASE_URL: postgresql://${POSTGRES_USER:-feedmob}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-feedmob_adpilot}
-      
-      # AWS Configuration
       AWS_REGION: ${AWS_REGION:-us-east-1}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_RETRY_MODE: ${AWS_RETRY_MODE:-adaptive}
       AWS_MAX_ATTEMPTS: ${AWS_MAX_ATTEMPTS:-20}
-      
-      # Claude/Bedrock Configuration
       CLAUDE_CODE_USE_BEDROCK: ${CLAUDE_CODE_USE_BEDROCK:-1}
       ANTHROPIC_SMALL_FAST_MODEL: ${ANTHROPIC_SMALL_FAST_MODEL:-us.anthropic.claude-haiku-4-5-20251001-v1:0}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-us.anthropic.claude-sonnet-4-5-20250929-v1:0}
-      
-      # API Keys
       TAVILY_API_KEY: ${TAVILY_API_KEY}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
-      
-      # ImageKit Configuration
       IMAGEKIT_PRIVATE_KEY: ${IMAGEKIT_PRIVATE_KEY}
       IMAGEKIT_PUBLIC_KEY: ${IMAGEKIT_PUBLIC_KEY}
       IMAGEKIT_URL_ENDPOINT: ${IMAGEKIT_URL_ENDPOINT}
-      
-      # Node Environment
       NODE_ENV: production
     networks:
       - adpilot-network
@@ -60,20 +51,17 @@ services:
         condition: service_healthy
 
   client-ui:
-    image: ghcr.io/feedmob/feedmob_adpilot_mcp-ui:${IMAGE_TAG:-latest}
+    build:
+      context: ./client-ui
+      dockerfile: Dockerfile
     container_name: feedmob-adpilot-ui
     restart: unless-stopped
     environment:
-      # MCP Server Configuration
       MCP_SERVER_URL: ${MCP_SERVER_URL:-http://mcp-server:8080/mcp}
-      
-      # AWS Bedrock Configuration
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_REGION: ${AWS_REGION:-us-east-1}
       BEDROCK_MODEL_ID: ${BEDROCK_MODEL_ID:-us.anthropic.claude-haiku-4-5-20251001-v1:0}
-      
-      # Node Environment
       NODE_ENV: production
     networks:
       - adpilot-network

@@ -9,14 +9,30 @@ This guide explains how to deploy the FeedMob AdPilot MCP project to Coolify usi
 - AWS account with Bedrock access
 - Required API keys (Tavily, ImageKit, etc.)
 
+## Docker Images
+
+Docker images are automatically built and published to GitHub Container Registry (ghcr.io) on every push to `main`:
+
+- **MCP Server**: `ghcr.io/feedmob/feedmob_adpilot_mcp:latest`
+- **Client UI**: `ghcr.io/feedmob/feedmob_adpilot_mcp-ui:latest`
+
+Available tags:
+- `latest` - Latest build from main branch
+- `main` - Same as latest
+- `v1.0.0` - Semantic version tags
+- `<sha>` - Specific commit SHA
+
 ## Project Structure
 
 ```
 .
 ├── Dockerfile                    # MCP server Docker image
 ├── .dockerignore                 # MCP server build exclusions
-├── docker-compose.yaml           # Production compose configuration
+├── docker-compose.yaml           # Production compose (uses ghcr.io images)
+├── docker-compose.build.yaml     # Local development (builds from source)
 ├── .env.coolify.example          # Environment variables template
+├── .github/workflows/
+│   └── docker-publish.yml        # CI/CD for building Docker images
 └── client-ui/
     ├── Dockerfile               # Client UI Docker image
     ├── .dockerignore            # Client UI build exclusions
@@ -51,31 +67,40 @@ Edit `.env` and set:
 
 ### 2. Deploy to Coolify
 
-#### Option A: Using Coolify UI
+#### Option A: Using Pre-built Images (Recommended)
+
+The `docker-compose.yaml` uses pre-built images from GitHub Container Registry:
+
+```bash
+# Pull and start services
+docker-compose up -d
+
+# Or specify a specific version
+IMAGE_TAG=v1.0.0 docker-compose up -d
+```
+
+#### Option B: Using Coolify UI
 
 1. Create a new project in Coolify
 2. Select "Docker Compose" as the deployment type
 3. Connect your Git repository
 4. Set the repository branch (e.g., `main`)
 5. In the Environment section, paste all variables from `.env.coolify.example`
-6. Configure the following settings:
-   - **Build Command**: (leave default)
+6. Add `IMAGE_TAG=latest` (or specific version)
+7. Configure the following settings:
    - **Start Command**: `docker-compose up -d`
    - **Port Mappings**: 
      - MCP Server: 8080
      - Client UI: 3000
-7. Click "Deploy"
+8. Click "Deploy"
 
-#### Option B: Using Coolify CLI
+#### Option C: Building from Source
+
+For local development or custom builds:
 
 ```bash
-# Push your code to Git repository
-git add .
-git commit -m "Add Docker deployment configuration"
-git push origin main
-
-# Deploy via Coolify CLI (if configured)
-coolify deploy --project feedmob-adpilot
+# Use the build compose file
+docker-compose -f docker-compose.build.yaml up --build -d
 ```
 
 ### 3. Verify Deployment
@@ -215,7 +240,20 @@ docker-compose down -v
 
 ## Updating the Deployment
 
-To update the deployment after code changes:
+### Using Pre-built Images
+
+Images are automatically built on push to `main`. To update:
+
+```bash
+# Pull latest images and restart
+docker-compose pull
+docker-compose up -d
+
+# Or update to a specific version
+IMAGE_TAG=v1.2.0 docker-compose up -d
+```
+
+### Building from Source
 
 ```bash
 # Push changes to Git
@@ -223,10 +261,8 @@ git add .
 git commit -m "Update application"
 git push origin main
 
-# In Coolify, trigger a redeploy
-# Or manually:
-docker-compose pull
-docker-compose up -d --build
+# Build and deploy locally
+docker-compose -f docker-compose.build.yaml up --build -d
 ```
 
 ## Security Considerations
