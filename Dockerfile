@@ -37,11 +37,12 @@ RUN apk add --no-cache wget
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 mcpserver
 
-# Copy package files
+# Copy package files and reuse dependencies from the deps stage
 COPY package*.json ./
+COPY --from=deps /app/node_modules ./node_modules
 
-# Install only production dependencies
-RUN npm ci --omit=dev && \
+# Trim to production dependencies only (no fresh network fetch)
+RUN npm prune --omit=dev && \
     npm cache clean --force
 
 # Copy built application from builder
