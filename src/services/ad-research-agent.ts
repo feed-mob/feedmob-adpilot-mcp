@@ -1,9 +1,9 @@
-import { resolve, dirname } from 'path';
-import { existsSync } from 'fs';
+import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { query, type SDKMessage, type SDKResultMessage } from '@anthropic-ai/claude-agent-sdk';
 import { CampaignReport, CampaignReportSchema } from '../schemas/ad-research.js';
 import { CampaignParameters } from '../schemas/campaign-params.js';
+import { resolvePluginPath } from '../utils/plugin-path.js';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -22,7 +22,7 @@ export class AdResearchAgent {
    */
   async conductResearch(params: CampaignParameters): Promise<CampaignReport> {
     try {
-      const pluginPath = this.resolvePluginPath();
+      const pluginPath = resolvePluginPath(__dirname, 'conduct-ad-research');
       
       // Build campaign context for the prompt
       const campaignContext = this.buildCampaignContext(params);
@@ -168,23 +168,6 @@ Return a complete JSON campaign report with all required sections.`;
   /**
    * Resolve the path to the conduct-ad-research plugin
    */
-  private resolvePluginPath(): string {
-    // Primary path: src/plugins/conduct-ad-research
-    const pluginPath = resolve(__dirname, '..', 'plugins', 'conduct-ad-research');
-    
-    // Check if plugin exists with valid manifest
-    if (existsSync(pluginPath)) {
-      const manifestPath = resolve(pluginPath, 'skills', 'conduct-ad-research', 'SKILL.md');
-      if (existsSync(manifestPath)) {
-        console.log(`✅ Found conduct-ad-research plugin at: ${pluginPath}`);
-        return pluginPath;
-      }
-    }
-
-    throw new Error(
-      `conduct-ad-research plugin not found at expected location: ${pluginPath}. Expected structure: src/plugins/conduct-ad-research/skills/conduct-ad-research/SKILL.md`
-    );
-  }
 }
 
 /**

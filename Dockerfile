@@ -48,8 +48,9 @@ RUN npm prune --omit=dev && \
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
 
-# Copy plugins directory (needed for Claude Agent SDK)
+# Copy plugins directory (needed for Claude Agent SDK). Place in both src/ and dist/ to satisfy runtime lookups.
 COPY src/plugins ./src/plugins
+COPY src/plugins ./dist/plugins
 
 # Set ownership to non-root user
 RUN chown -R mcpserver:nodejs /app

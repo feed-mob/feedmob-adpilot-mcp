@@ -1,8 +1,8 @@
-import { resolve, dirname } from 'path';
-import { existsSync } from 'fs';
+import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { query, type SDKMessage, type SDKResultMessage } from '@anthropic-ai/claude-agent-sdk';
 import { Campaign, getCampaignCompletionStatus, CampaignCompletionStatus } from '../schemas/campaign.js';
+import { resolvePluginPath } from '../utils/plugin-path.js';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -116,7 +116,7 @@ export class CampaignManagementAgent {
    */
   async getWorkflowGuidance(campaign: Campaign): Promise<string> {
     try {
-      const pluginPath = this.resolvePluginPath();
+      const pluginPath = resolvePluginPath(__dirname, 'manage-campaign');
       const status = this.analyzeCampaignStatus(campaign);
       
       const prompt = `Use the "manage-campaign" skill to analyze this campaign and provide workflow guidance:
@@ -215,21 +215,6 @@ Provide guidance on what the user should do next.`;
   /**
    * Resolve the path to the manage-campaign plugin
    */
-  private resolvePluginPath(): string {
-    const pluginPath = resolve(__dirname, '..', 'plugins', 'manage-campaign');
-    
-    if (existsSync(pluginPath)) {
-      const manifestPath = resolve(pluginPath, 'skills', 'manage-campaign', 'SKILL.md');
-      if (existsSync(manifestPath)) {
-        console.log(`✅ Found manage-campaign plugin at: ${pluginPath}`);
-        return pluginPath;
-      }
-    }
-
-    throw new Error(
-      `manage-campaign plugin not found at expected location: ${pluginPath}. Expected structure: src/plugins/manage-campaign/skills/manage-campaign/SKILL.md`
-    );
-  }
 }
 
 /**

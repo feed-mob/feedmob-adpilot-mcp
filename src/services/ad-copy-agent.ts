@@ -1,10 +1,10 @@
-import { resolve, dirname } from 'path';
-import { existsSync } from 'fs';
+import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { query, type SDKMessage, type SDKResultMessage } from '@anthropic-ai/claude-agent-sdk';
 import { AdCopyResult, AdCopyResultSchema } from '../schemas/ad-copy.js';
 import { CampaignParameters } from '../schemas/campaign-params.js';
 import { CampaignReport } from '../schemas/ad-research.js';
+import { resolvePluginPath } from '../utils/plugin-path.js';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -27,7 +27,7 @@ export class AdCopyAgent {
     research?: CampaignReport
   ): Promise<AdCopyResult> {
     try {
-      const pluginPath = this.resolvePluginPath();
+      const pluginPath = resolvePluginPath(__dirname, 'generate-ad-copy');
       
       // Build campaign context for the prompt
       const campaignContext = this.buildCampaignContext(params);
@@ -199,27 +199,9 @@ Return a complete JSON object with both variations and your recommendation.`;
   /**
    * Resolve the path to the generate-ad-copy plugin
    */
-  private resolvePluginPath(): string {
-    // Primary path: src/plugins/generate-ad-copy
-    const pluginPath = resolve(__dirname, '..', 'plugins', 'generate-ad-copy');
-    
-    // Check if plugin exists with valid manifest
-    if (existsSync(pluginPath)) {
-      const manifestPath = resolve(pluginPath, 'skills', 'generate-ad-copy', 'SKILL.md');
-      if (existsSync(manifestPath)) {
-        console.log(`✅ Found generate-ad-copy plugin at: ${pluginPath}`);
-        return pluginPath;
-      }
-    }
-
-    throw new Error(
-      `generate-ad-copy plugin not found at expected location: ${pluginPath}. Expected structure: src/plugins/generate-ad-copy/skills/generate-ad-copy/SKILL.md`
-    );
-  }
 }
 
 /**
  * Singleton instance of the agent service
  */
 export const adCopyAgent = new AdCopyAgent();
-

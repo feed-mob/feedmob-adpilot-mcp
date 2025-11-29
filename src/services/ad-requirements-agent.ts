@@ -1,8 +1,8 @@
-import { resolve, dirname } from 'path';
-import { existsSync } from 'fs';
+import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { query, type SDKMessage, type SDKResultMessage } from '@anthropic-ai/claude-agent-sdk';
 import { ValidationResult, ValidationResultSchema } from '../schemas/campaign-params.js';
+import { resolvePluginPath } from '../utils/plugin-path.js';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -21,7 +21,7 @@ export class AdRequirementsAgent {
    */
   async parseRequirements(requestText: string): Promise<ValidationResult> {
     try {
-      const pluginPath = this.resolvePluginPath();
+      const pluginPath = resolvePluginPath(__dirname, 'parse-ad-requirements');
       
       const prompt = `Use the "parse-ad-requirements" skill to extract structured advertising campaign parameters from the following request:
 
@@ -116,26 +116,6 @@ Return a JSON object with the extracted parameters, missing fields, and suggesti
     return textParts.join('\n').trim();
   }
 
-  /**
-   * Resolve the path to the parse-ad-requirements plugin
-   */
-  private resolvePluginPath(): string {
-    // Primary path: src/plugins/parse-ad-requirements
-    const pluginPath = resolve(__dirname, '..', 'plugins', 'parse-ad-requirements');
-    
-    // Check if plugin exists with valid manifest
-    if (existsSync(pluginPath)) {
-      const manifestPath = resolve(pluginPath, 'skills', 'parse-ad-requirements', 'SKILL.md');
-      if (existsSync(manifestPath)) {
-        console.log(`✅ Found parse-ad-requirements plugin at: ${pluginPath}`);
-        return pluginPath;
-      }
-    }
-
-    throw new Error(
-      `parse-ad-requirements plugin not found at expected location: ${pluginPath}. Expected structure: src/plugins/parse-ad-requirements/skills/parse-ad-requirements/SKILL.md`
-    );
-  }
 }
 
 /**

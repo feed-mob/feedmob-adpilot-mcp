@@ -1,10 +1,10 @@
-import { resolve, dirname } from 'path';
-import { existsSync } from 'fs';
+import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { query, type SDKMessage, type SDKResultMessage } from '@anthropic-ai/claude-agent-sdk';
 import { AdImagesResult, AdImagesResultSchema, PLATFORM_DIMENSIONS } from '../schemas/ad-images.js';
 import { CampaignParameters } from '../schemas/campaign-params.js';
 import { CampaignReport } from '../schemas/ad-research.js';
+import { resolvePluginPath } from '../utils/plugin-path.js';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -27,7 +27,7 @@ export class AdImagesAgent {
     research?: CampaignReport
   ): Promise<AdImagesResult> {
     try {
-      const pluginPath = this.resolvePluginPath();
+      const pluginPath = resolvePluginPath(__dirname, 'generate-ad-images');
       
       // Build campaign context for the prompt
       const campaignContext = this.buildCampaignContext(params);
@@ -231,23 +231,6 @@ Follow the skill workflow to generate both variations using the Python script, t
   /**
    * Resolve the path to the generate-ad-images plugin
    */
-  private resolvePluginPath(): string {
-    // Primary path: src/plugins/generate-ad-images
-    const pluginPath = resolve(__dirname, '..', 'plugins', 'generate-ad-images');
-    
-    // Check if plugin exists with valid manifest
-    if (existsSync(pluginPath)) {
-      const manifestPath = resolve(pluginPath, 'skills', 'generate-ad-images', 'SKILL.md');
-      if (existsSync(manifestPath)) {
-        console.log(`✅ Found generate-ad-images plugin at: ${pluginPath}`);
-        return pluginPath;
-      }
-    }
-
-    throw new Error(
-      `generate-ad-images plugin not found at expected location: ${pluginPath}. Expected structure: src/plugins/generate-ad-images/skills/generate-ad-images/SKILL.md`
-    );
-  }
 }
 
 /**
