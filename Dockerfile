@@ -57,7 +57,7 @@ RUN npm prune --omit=dev && \
 COPY --from=builder /app/dist ./dist
 
 # Ensure migration SQL files are present in the runtime image
-COPY src/migrations ./dist/migrations
+COPY --from=builder /app/src/migrations ./dist/migrations
 
 # Copy plugins directory (needed for Claude Agent SDK). Place in both src/ and dist/ to satisfy runtime lookups.
 COPY src/plugins ./src/plugins
