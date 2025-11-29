@@ -23,7 +23,7 @@ services:
       start_period: 10s
 
   mcp-server:
-    image: ghcr.io/feedmob/feedmob_adpilot_mcp:${IMAGE_TAG:-latest}
+    image: ghcr.io/feed-mob/feedmob-adpilot-mcp:${IMAGE_TAG:-latest}
     container_name: feedmob-adpilot-mcp
     restart: unless-stopped
     environment:
@@ -60,7 +60,7 @@ services:
         condition: service_healthy
 
   client-ui:
-    image: ghcr.io/feedmob/feedmob_adpilot_mcp-ui:${IMAGE_TAG:-latest}
+    image: ghcr.io/feed-mob/feedmob-adpilot-mcp-ui:${IMAGE_TAG:-latest}
     container_name: feedmob-adpilot-ui
     restart: unless-stopped
     environment:
