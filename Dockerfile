@@ -6,6 +6,13 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
+# Make npm more resilient to flaky registries
+ENV NPM_CONFIG_FETCH_RETRIES=5 \
+    NPM_CONFIG_FETCH_RETRY_MINTIMEOUT=20000 \
+    NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT=120000 \
+    NPM_CONFIG_FETCH_TIMEOUT=120000 \
+    NPM_CONFIG_REGISTRY=https://registry.npmjs.org/
+
 # Install all dependencies (including devDependencies for build)
 RUN npm ci
 
@@ -21,6 +28,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY package*.json ./
 COPY tsconfig.json ./
 COPY src ./src
+COPY scripts ./scripts
 
 # Build TypeScript to JavaScript
 RUN npm run build
