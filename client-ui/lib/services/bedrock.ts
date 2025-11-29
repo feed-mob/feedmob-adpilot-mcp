@@ -87,7 +87,7 @@ export class BedrockService {
           json: tool.inputSchema,
         },
       },
-    }));
+    })) as BedrockTool[];
   }
 
   /**
@@ -144,7 +144,7 @@ export class BedrockService {
             toolUse: {
               toolUseId: toolUse.toolUseId || '',
               name: toolUse.name || '',
-              input: (toolUse.input as Record<string, unknown>) || {},
+              input: {},
             },
           };
         }

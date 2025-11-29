@@ -6,7 +6,7 @@ export const UIResourceSchema = z.object({
   mimeType: z.string(),
   text: z.string().optional(),
   blob: z.string().optional(),
-  _meta: z.record(z.unknown()).optional(),
+  _meta: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type UIResource = z.infer<typeof UIResourceSchema>;
@@ -21,7 +21,7 @@ export const ToolUseContentSchema = z.object({
   type: z.literal('tool_use'),
   toolUseId: z.string(),
   name: z.string(),
-  input: z.record(z.unknown()),
+  input: z.record(z.string(), z.unknown()),
 });
 
 export const ToolResultContentItemSchema = z.union([
@@ -77,7 +77,7 @@ export type ChatSession = z.infer<typeof ChatSessionSchema>;
 // UIAction Types
 export const UIActionSchema = z.object({
   type: z.enum(['tool', 'prompt', 'notify', 'link', 'intent']),
-  payload: z.record(z.unknown()),
+  payload: z.record(z.string(), z.unknown()),
   messageId: z.string().optional(),
 });
 
