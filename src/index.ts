@@ -8,10 +8,16 @@ import { generateMixedMediaCreativeTool } from './tools/generate-mixed-media.js'
 import { getCampaignTool } from './tools/get-campaign.js';
 import { db } from './services/database.js';
 
-// Initialize FastMCP server
+// Initialize FastMCP server with health check endpoint
 const server = new FastMCP({
   name: "FeedMob AdPilot MCP",
-  version: "1.0.0"
+  version: "1.0.0",
+  health: {
+    enabled: true,
+    message: "healthy",
+    path: "/health",
+    status: 200,
+  }
 });
 
 // Register tools
@@ -48,6 +54,7 @@ async function start() {
     });
 
     console.log(`🚀 FeedMob AdPilot MCP Server started on http://${host}:8080/mcp`);
+    console.log(`✅ Health check endpoint available at http://${host}:8080/health`);
   } catch (error) {
     console.error('❌ Failed to start server:', error);
     process.exit(1);

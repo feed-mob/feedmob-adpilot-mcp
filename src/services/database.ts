@@ -26,7 +26,7 @@ interface DatabaseConfig {
 /**
  * DatabaseService - Manages PostgreSQL connection pool and provides database operations
  */
-class DatabaseService {
+export class DatabaseService {
   private pool: pg.Pool | null = null;
   private config: DatabaseConfig;
   private retryAttempts = 5;

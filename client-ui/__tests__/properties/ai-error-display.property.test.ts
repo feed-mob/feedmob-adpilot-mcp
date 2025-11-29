@@ -85,9 +85,9 @@ describe('AI Error Display - Property Tests', () => {
     expect(events[0].error).not.toContain('ValidationException'); // No raw error names
   });
 
-  it('should handle any error type with user-friendly messages', () => {
-    fc.assert(
-      fc.property(
+  it('should handle any error type with user-friendly messages', async () => {
+    await fc.assert(
+      fc.asyncProperty(
         fc.record({
           name: fc.string(),
           message: fc.string(),

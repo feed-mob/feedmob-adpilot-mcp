@@ -32,11 +32,11 @@ describe('Bedrock Model Invocation - Property Tests', () => {
     vi.clearAllMocks();
   });
 
-  it('should use the correct model ID for all message submissions', () => {
+  it('should use the correct model ID for all message submissions', async () => {
     const { ConverseStreamCommand } = require('@aws-sdk/client-bedrock-runtime');
 
-    fc.assert(
-      fc.property(
+    await fc.assert(
+      fc.asyncProperty(
         fc.array(
           fc.record({
             id: fc.string({ minLength: 1 }),

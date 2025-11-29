@@ -34,8 +34,8 @@ FROM node:20-alpine AS runner
 
 WORKDIR /app
 
-# Install libc6-compat
-RUN apk add --no-cache libc6-compat
+# Install libc6-compat and wget for health checks
+RUN apk add --no-cache libc6-compat wget
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \

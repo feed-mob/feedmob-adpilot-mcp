@@ -49,11 +49,11 @@ describe('Tool Discovery - Property Tests', () => {
     });
   });
 
-  it('should discover all tools after successful connection', () => {
+  it('should discover all tools after successful connection', async () => {
     const SDKClient = mockClientConstructor;
 
-    fc.assert(
-      fc.property(
+    await fc.assert(
+      fc.asyncProperty(
         fc.array(
           fc.record({
             name: fc.string({ minLength: 1 }),
