@@ -1,3 +1,6 @@
+-- Ensure pgcrypto is available for gen_random_uuid()
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
 -- Create campaigns table for storing campaign data across MCP tool calls
 CREATE TABLE IF NOT EXISTS campaigns (
   -- Primary key
