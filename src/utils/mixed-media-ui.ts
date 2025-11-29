@@ -282,7 +282,7 @@ export function createMixedMediaUI(result: MixedMediaResult, campaignId?: string
     <div class="container">
       <div class="header">
         <div class="header-title">
-          🎨 Mixed Media Creative Preview
+          🎨 Ad Creative Preview
         </div>
         <div class="header-meta">
           <div class="meta-item"><strong>Platform:</strong> ${result.platform}</div>
@@ -337,15 +337,6 @@ export function createMixedMediaUI(result: MixedMediaResult, campaignId?: string
         </div>
       </div>
 
-      <div class="actions-section">
-        <button class="action-button primary" onclick="downloadPNG()">
-          📥 Download PNG
-        </button>
-        <button class="action-button primary" onclick="downloadJPEG()">
-          📥 Download JPEG
-        </button>
-      </div>
-
       <div class="regenerate-section">
         <button class="regenerate-button" onclick="tryDifferentCopy()">
           📝 Try Different Copy
@@ -367,22 +358,6 @@ export function createMixedMediaUI(result: MixedMediaResult, campaignId?: string
             setTimeout(() => { btn.textContent = '📋'; }, 2000);
           }
         });
-      }
-
-      function downloadPNG() {
-        const link = document.createElement('a');
-        link.href = '${result.composite_image_url}';
-        link.download = 'ad-creative-${result.platform}-${Date.now()}.png';
-        link.target = '_blank';
-        link.click();
-      }
-
-      function downloadJPEG() {
-        const link = document.createElement('a');
-        link.href = '${result.composite_image_url}';
-        link.download = 'ad-creative-${result.platform}-${Date.now()}.jpg';
-        link.target = '_blank';
-        link.click();
       }
 
       function tryDifferentCopy() {

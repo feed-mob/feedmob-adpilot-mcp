@@ -120,7 +120,7 @@ export function UIResourceMessage({ resource, onToolCall }: UIResourceMessagePro
             autoResizeIframe: true,
             style: {
               width: '100%',
-              minHeight: '500px',
+              minHeight: '800px',
               border: 'none',
               display: 'block',
             },

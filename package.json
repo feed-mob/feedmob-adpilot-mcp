@@ -1,7 +1,7 @@
 {
-  "name": "mcp-ui-fastmcp-demo",
+  "name": "feedmob-adpilot-mcp",
   "version": "1.0.0",
-  "description": "Minimal demonstration project showcasing FastMCP and mcp-ui integration",
+  "description": "FeedMob AdPilot MCP server for AI-powered advertising campaign management",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

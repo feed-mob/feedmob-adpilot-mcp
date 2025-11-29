@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-Get the MCP-UI Chat Client running in 5 minutes!
+Get FeedMob AdPilot running in 5 minutes!
 
 ## Step 1: Configure Environment
 

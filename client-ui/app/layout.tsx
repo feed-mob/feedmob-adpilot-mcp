@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MCP-UI Chat Client",
+  title: "FeedMob AdPilot",
   description: "Chat interface with MCP tool support and interactive UI components",
 };
 

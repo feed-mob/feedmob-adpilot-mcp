@@ -54,7 +54,7 @@ export default function Home() {
     <div className="h-screen flex flex-col">
       <div className="flex-shrink-0 border-b border-gray-200 p-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">
-          MCP-UI Chat Client
+          FeedMob AdPilot
         </h1>
         <ChatHistory
           currentSessionId={currentSessionId}

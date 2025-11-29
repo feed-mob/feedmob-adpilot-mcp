@@ -1,4 +1,4 @@
-# MCP-UI Chat Client
+# FeedMob AdPilot
 
 A Next.js chat interface that connects to MCP (Model Context Protocol) servers and renders interactive UI components using the mcp-ui library. This client uses AWS Bedrock with Claude Haiku for AI conversations and supports rich, interactive UIResources from MCP tool responses.
 
