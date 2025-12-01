@@ -1,47 +1,55 @@
 # FeedMob AdPilot MCP Server
 
-AI-powered advertising campaign planning and research assistant built with FastMCP and Claude Agent SDK.
+AI-powered advertising campaign planning and creative generation built with FastMCP and Claude Agent SDK.
 
 ## Overview
 
-This MCP server provides intelligent tools for advertising campaign planning:
+This MCP server provides a complete advertising workflow:
 
-- **Parse Ad Requirements** - Extract structured campaign parameters from natural language
-- **Conduct Ad Research** - Generate comprehensive campaign reports with market insights
-
-## Features
-
-- 🤖 **Agent-Powered NLP** - Uses Claude Agent SDK with custom skills for complex extraction
-- 🎨 **Interactive UI** - Rich mcp-ui components for parameter review and editing
-- 🔍 **Web Research** - Integrates with search tools for real-time market insights
-- ✅ **Type-Safe** - Full TypeScript with Zod schema validation
-- 🧪 **Property-Based Testing** - Comprehensive test coverage with fast-check
+1. **Parse Ad Requirements** - Extract structured parameters from natural language
+2. **Conduct Ad Research** - Generate comprehensive campaign reports
+3. **Generate Ad Copy** - Create platform-optimized copy variations
+4. **Generate Ad Images** - Create image variations for campaigns
+5. **Generate Mixed Media** - Combine images and copy for final creatives
+6. **Campaign Management** - Store and retrieve campaign data
 
 ## Architecture
 
 ```
 ┌─────────────────────────────────────────┐
-│  MCP Tools (FastMCP)                    │  ← Tool definitions
+│  MCP Tools (FastMCP)                    │
 │  - parseAdRequirements                  │
 │  - conductAdResearch                    │
+│  - generateAdCopy                       │
+│  - generateAdImages                     │
+│  - generateMixedMediaCreative           │
+│  - getCampaign                          │
 └──────────────┬──────────────────────────┘
                │
 ┌──────────────▼──────────────────────────┐
-│  Agent Services                         │  ← Claude Agent SDK
+│  Agent Services (Claude Agent SDK)      │
 │  - AdRequirementsAgent                  │
 │  - AdResearchAgent                      │
+│  - AdCopyAgent                          │
+│  - AdImagesAgent                        │
+│  - MixedMediaAgent                      │
+│  - CampaignManagementAgent              │
 └──────────────┬──────────────────────────┘
                │
 ┌──────────────▼──────────────────────────┐
-│  UI Factories                           │  ← mcp-ui resources
+│  UI Factories (mcp-ui)                  │
 │  - createParametersUI                   │
 │  - createResearchReportUI               │
+│  - createAdCopyUI                       │
+│  - createAdImagesUI                     │
+│  - createMixedMediaUI                   │
+│  - createCampaignUI                     │
 └──────────────┬──────────────────────────┘
                │
 ┌──────────────▼──────────────────────────┐
-│  Schemas (Zod)                          │  ← Type safety
-│  - CampaignParameters                   │
-│  - CampaignReport                       │
+│  Data Layer                             │
+│  - Zod Schemas (validation)             │
+│  - PostgreSQL (persistence)             │
 └─────────────────────────────────────────┘
 ```
 
@@ -53,177 +61,172 @@ Parse natural language campaign requirements into structured parameters.
 
 **Input:**
 ```typescript
-{
-  requestText: string  // Natural language campaign description
-}
+{ requestText: string }
 ```
 
 **Output:**
 - Structured campaign parameters (product, audience, budget, platform, KPIs, etc.)
 - List of missing fields
-- Suggestions for completing requirements
-- Interactive UI for reviewing and editing parameters
-
-**Annotations:**
-- `readOnlyHint: true` - Does not modify external state
-- `idempotentHint: true` - Same input produces same output
-
-**Example:**
-```
-"I want to run a TikTok campaign for my eco-friendly water bottles targeting Gen Z 
-with a $5000 budget focused on brand awareness"
-```
+- Interactive UI for reviewing and editing
 
 ### conductAdResearch
 
-Conduct comprehensive advertising research based on confirmed campaign parameters.
+Conduct comprehensive advertising research based on campaign parameters.
+
+**Input:**
+```typescript
+{ campaignParameters: CampaignParameters }
+```
+
+**Output:**
+- Executive summary with key findings
+- Audience insights and platform strategies
+- Creative direction recommendations
+- Budget allocation suggestions
+- Performance benchmarks
+- Implementation timeline
+- Cited sources
+
+### generateAdCopy
+
+Generate two distinct ad copy variations.
 
 **Input:**
 ```typescript
 {
-  campaignParameters: CampaignParameters  // Structured parameters from parsing
+  campaignParameters: CampaignParameters,
+  campaignReport?: CampaignReport  // Optional research insights
 }
 ```
 
 **Output:**
-- Executive summary with key findings and recommendations
-- Audience insights (demographics, behaviors, preferences)
-- Platform-specific strategies and best practices
-- Creative direction and format recommendations
-- Budget allocation across platforms
-- Performance benchmarks and KPIs
-- Implementation timeline
-- Cited sources
+- Two copy variations with headline, body, CTA
+- Platform-optimized content
+- Recommendation for best variation
+- Interactive selection UI
 
-**Annotations:**
-- `readOnlyHint: true` - Does not modify external state
-- `idempotentHint: false` - Results may vary based on current web data
-- `openWorldHint: true` - Uses external web search tools
+### generateAdImages
 
-**Example:**
+Generate image variations for campaigns.
+
+**Input:**
 ```typescript
 {
-  campaignParameters: {
-    product_or_service: "Eco-friendly water bottles",
-    target_audience: "Gen Z environmentally conscious consumers",
-    platform: "TikTok",
-    budget: "$5000",
-    kpi: "Brand awareness, engagement rate"
-    // ... other parameters
-  }
+  campaignParameters: CampaignParameters,
+  selectedCopy?: AdCopyVariation
 }
 ```
 
-## Quick Start
+**Output:**
+- Multiple image variations
+- Interactive preview and selection
 
-### Installation
+### generateMixedMediaCreative
 
-```bash
-npm install
+Combine selected image and copy into final creative.
+
+**Input:**
+```typescript
+{
+  campaignParameters: CampaignParameters,
+  selectedImage: ImageVariation,
+  selectedCopy: AdCopyVariation
+}
 ```
 
-### Development
+**Output:**
+- Combined creative asset
+- Platform-specific formatting
+- Export options
 
-```bash
-# Start development server with watch mode
-npm run dev
+### getCampaign
 
-# Test with MCP Inspector (visual debugging)
-npm run mcp:inspect
+Retrieve stored campaign data.
 
-# Run tests
-npm test
-
-# Type checking
-npm run typecheck
+**Input:**
+```typescript
+{ campaignId: string }
 ```
 
-### Production
-
-```bash
-# Build
-npm run build
-
-# Start production server
-npm start
-```
+**Output:**
+- Complete campaign data
+- Associated creatives and research
 
 ## Server Endpoints
 
-- **MCP Endpoint**: `http://localhost:8080/mcp`
-- **SSE Endpoint**: `http://localhost:8080/sse`
-- **Health Check**: `http://localhost:8080/ready`
-
-## Environment Variables
-
-Create a `.env` file:
-
-```bash
-# Optional: Add any API keys for enhanced research capabilities
-```
-
-## Testing
-
-The project includes comprehensive property-based tests:
-
-```bash
-# Run all tests
-npm test
-
-# Watch mode
-npm run test:watch
-
-# Coverage report
-npm run test:coverage
-```
-
-Test categories:
-- Schema validation round-trips
-- Input/output schema enforcement
-- Business logic invariants
-- UIResource generation
-- Visual state consistency
+- **MCP**: `http://localhost:8080/mcp`
+- **SSE**: `http://localhost:8080/sse`
+- **Health**: `http://localhost:8080/health`
 
 ## Claude Agent Skills
 
-The server uses custom Claude Agent skills located in `src/plugins/`:
+Skills are located in `src/plugins/`:
 
-### parse-ad-requirements
-
-Extracts structured advertising parameters from natural language using NLP techniques.
-
-**Location**: `src/plugins/parse-ad-requirements/skills/parse-ad-requirements/SKILL.md`
-
-### conduct-ad-research
-
-Conducts comprehensive market research using web search tools and generates detailed campaign reports.
-
-**Location**: `src/plugins/conduct-ad-research/skills/conduct-ad-research/SKILL.md`
+| Skill | Location |
+|-------|----------|
+| parse-ad-requirements | `src/plugins/parse-ad-requirements/skills/` |
+| conduct-ad-research | `src/plugins/conduct-ad-research/skills/` |
+| generate-ad-copy | `src/plugins/generate-ad-copy/skills/` |
+| generate-ad-images | `src/plugins/generate-ad-images/skills/` |
+| generate-mixed-media | `src/plugins/generate-mixed-media/skills/` |
+| manage-campaign | `src/plugins/manage-campaign/skills/` |
 
 ## Project Structure
 
 ```
 src/
-├── index.ts                    # FastMCP server entry point
+├── index.ts                    # FastMCP server entry
 ├── tools/                      # MCP tool definitions
 │   ├── parse-ad-requirements.ts
-│   └── conduct-ad-research.ts
+│   ├── conduct-ad-research.ts
+│   ├── generate-ad-copy.ts
+│   ├── generate-ad-images.ts
+│   ├── generate-mixed-media.ts
+│   └── get-campaign.ts
 ├── services/                   # Claude Agent SDK integration
 │   ├── ad-requirements-agent.ts
-│   └── ad-research-agent.ts
+│   ├── ad-research-agent.ts
+│   ├── ad-copy-agent.ts
+│   ├── ad-images-agent.ts
+│   ├── mixed-media-agent.ts
+│   ├── campaign-management-agent.ts
+│   ├── campaign.ts
+│   └── database.ts
 ├── utils/                      # UI factories
 │   ├── ad-requirements-ui.ts
-│   └── ad-research-ui.ts
+│   ├── ad-research-ui.ts
+│   ├── ad-copy-ui.ts
+│   ├── ad-images-ui.ts
+│   ├── mixed-media-ui.ts
+│   └── campaign-ui.ts
 ├── schemas/                    # Zod schemas
 │   ├── campaign-params.ts
-│   └── ad-research.ts
+│   ├── ad-research.ts
+│   ├── ad-copy.ts
+│   ├── ad-images.ts
+│   ├── mixed-media.ts
+│   ├── campaign.ts
+│   └── health.ts
 └── plugins/                    # Claude Agent skills
-    ├── parse-ad-requirements/
-    └── conduct-ad-research/
+```
 
-tests/
-├── unit/                       # Unit tests
-└── properties/                 # Property-based tests
+## Quick Start
+
+```bash
+# Install
+npm install
+
+# Configure
+cp .env.example .env
+
+# Start database
+docker-compose up -d postgres
+
+# Run development server
+npm run dev
+
+# Test with MCP Inspector
+npm run mcp:inspect
 ```
 
 ## Technology Stack
@@ -232,28 +235,10 @@ tests/
 - **@mcp-ui/server** (^5.13.1) - Interactive UI components
 - **@anthropic-ai/claude-agent-sdk** (^0.1.54) - Claude Agent integration
 - **Zod** (^3.22.0) - Schema validation
+- **PostgreSQL** - Data persistence
 - **TypeScript** (^5.3.0) - Type safety
-- **Vitest** (^1.2.0) - Testing framework
+- **Vitest** (^1.2.0) - Testing
 - **fast-check** (^3.15.0) - Property-based testing
-
-## Best Practices
-
-This server follows MCP best practices:
-
-1. **Clear Tool Naming** - Action-oriented, descriptive names
-2. **Type Safety** - Zod schemas for input/output validation
-3. **Error Handling** - Categorized errors with actionable messages
-4. **Interactive UI** - Rich mcp-ui components for better UX
-5. **Annotations** - Proper tool hints for client optimization
-6. **Comprehensive Testing** - Property-based tests for invariants
-7. **Agent Integration** - Claude Agent SDK for complex NLP tasks
-
-## Documentation
-
-- [Agent Tool Patterns](.kiro/steering/agent-tool-patterns.md) - Architecture patterns
-- [FastMCP Integration](.kiro/steering/fastmcp-integration.md) - FastMCP usage
-- [MCP-UI Integration](.kiro/steering/mcp-ui-integration.md) - UI component creation
-- [Claude Agent Skills](.kiro/steering/claude-agent-skills.md) - Skill development
 
 ## License
 

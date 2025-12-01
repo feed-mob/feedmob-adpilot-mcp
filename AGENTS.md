@@ -1,34 +1,72 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- Source lives in `src/` with the FastMCP entry at `src/index.ts`; tools in `src/tools/` (ad requirements parsing, research, copy generation, image generation, mixed media); UI helpers in `src/utils/` (ad-requirements-ui, ad-research-ui, ad-copy-ui, ad-images-ui, mixed-media-ui).
-- Tests split into `tests/unit/` and `tests/properties/`; build artifacts land in `dist/`.
-- `docker-compose.yaml` provisions local Postgres; optional for the demo server.
+
+- Source lives in `src/` with the FastMCP entry at `src/index.ts`
+- Tools in `src/tools/`: parseAdRequirements, conductAdResearch, generateAdCopy, generateAdImages, generateMixedMedia, getCampaign
+- Agent services in `src/services/`: ad-requirements-agent, ad-research-agent, ad-copy-agent, ad-images-agent, mixed-media-agent, campaign-management-agent, campaign, database
+- UI factories in `src/utils/`: ad-requirements-ui, ad-research-ui, ad-copy-ui, ad-images-ui, mixed-media-ui, campaign-ui
+- Schemas in `src/schemas/`: campaign-params, ad-research, ad-copy, ad-images, mixed-media, campaign, health
+- Claude Agent skills in `src/plugins/`
+- Tests split into `tests/unit/` and `tests/properties/`
+- Client UI in `client-ui/` (Next.js)
+- Build artifacts in `dist/`
 
 ## Build, Test, and Development Commands
-- `npm run dev` — watch + run the server on port 8080.
-- `npm run build` then `npm start` — emit to `dist/` and run compiled server.
-- `npm run typecheck` — TypeScript strict checks with no emit.
-- `npm test` / `npm run test:watch` / `npm run test:coverage` — Vitest suite, watch mode, coverage.
-- `npm run mcp:dev` — FastMCP dev mode on `src/index.ts`; `npm run mcp:inspect` — open MCP Inspector for live tool testing.
+
+```bash
+npm run dev              # Watch + run server on port 8080
+npm run build            # Compile TypeScript to dist/
+npm start                # Run production build
+npm run typecheck        # TypeScript strict checks
+npm test                 # Run Vitest suite
+npm run test:watch       # Watch mode
+npm run test:coverage    # Coverage report
+npm run mcp:dev          # FastMCP dev mode
+npm run mcp:inspect      # MCP Inspector for live testing
+```
+
+## Database Commands
+
+```bash
+docker-compose up -d postgres    # Start PostgreSQL
+docker-compose down              # Stop services
+```
 
 ## Coding Style & Naming Conventions
-- TypeScript, ESM, strict mode; prefer `const`, typed params, explicit returns.
-- Single Responsibility: one tool per file, one concern per function; isolate validation, UI composition, and transport into helpers.
-- Two-space indentation and named exports; file names are kebab-case (`ui-factory.ts`).
-- UIResources use semantic URIs (`ui://resource-type/id`) and inline CSS, matching existing tools.
-- No formatter config; mirror existing single quotes in imports and concise double-quoted metadata strings.
+
+- TypeScript, ESM, strict mode
+- Prefer `const`, typed params, explicit returns
+- Single Responsibility: one tool per file, one concern per function
+- Two-space indentation, named exports
+- File names: kebab-case (`ad-requirements-ui.ts`)
+- UIResources: semantic URIs (`ui://resource-type/id`) with inline CSS
+- Design system CSS variables for light/dark mode support
 
 ## Testing Guidelines
-- Unit and property tests use Vitest and fast-check; keep new tests colocated under `tests/unit` or `tests/properties`.
-- Prefer property tests for schema validation and UI metadata; unit tests cover tool behavior and SRP boundaries (e.g., helpers stay pure, handlers stay thin).
-- Run `npm test` before commits; ensure coverage does not regress when adding logic-heavy tools.
+
+- Unit and property tests use Vitest and fast-check
+- Tests in `tests/unit/` and `tests/properties/`
+- Property tests for schema validation and UI metadata
+- Unit tests for tool behavior and SRP boundaries
+- Run `npm test` before commits
 
 ## Commit & Pull Request Guidelines
-- Follow the Conventional Commits pattern seen in history: `feat(scope): ...`, `chore: ...`, etc.
-- PRs should include: a brief summary, linked issue (if any), screenshots or console output for UI changes, and a checklist of commands run (tests, typecheck, inspector/dev where relevant).
-- Keep diffs small and focused; note any impacts to HTTP endpoints (`/mcp`, `/sse`, `/ready`) or port 8080 usage; group changes so each commit addresses a single responsibility.
 
-## Security & Configuration Tips
-- Do not commit secrets or environment values; Postgres creds in `docker-compose.yaml` are for local use only.
-- When exposing the server, verify CORS and transport settings; default endpoints are `http://localhost:8080/mcp` and `/sse`.
+- Conventional Commits: `feat(scope): ...`, `chore: ...`, etc.
+- PRs include: summary, linked issue, screenshots for UI changes
+- Keep diffs small and focused
+- Note impacts to HTTP endpoints (`/mcp`, `/sse`, `/health`)
+
+## Security & Configuration
+
+- Never commit secrets or `.env` files
+- Use `.env.example` as template
+- PostgreSQL creds in `docker-compose.yaml` are for local use only
+- Verify CORS and transport settings when exposing server
+
+## Server Endpoints
+
+- MCP: `http://localhost:8080/mcp`
+- SSE: `http://localhost:8080/sse`
+- Health: `http://localhost:8080/health`

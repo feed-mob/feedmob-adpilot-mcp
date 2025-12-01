@@ -1,26 +1,43 @@
 # Quick Start Guide
 
-## Setup (5 minutes)
+Get the FeedMob AdPilot MCP Server running in 5 minutes.
 
-### 1. Install Dependencies
+## 1. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 2. Configure Environment
+## 2. Configure Environment
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and add your Anthropic API key:
+Edit `.env` with your credentials:
 
 ```env
-# Add any required API keys here
+# AWS Bedrock (required for Claude Agent SDK)
+CLAUDE_CODE_USE_BEDROCK=1
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your_key
+AWS_SECRET_ACCESS_KEY=your_secret
+ANTHROPIC_MODEL=us.anthropic.claude-sonnet-4-20250514-v1:0
+
+# PostgreSQL
+DATABASE_URL=postgresql://feedmob:feedmob@localhost:5432/feedmob_adpilot
+
+# Optional: Enhanced research
+TAVILY_API_KEY=your_tavily_key
 ```
 
-### 3. Start the Server
+## 3. Start Database
+
+```bash
+docker-compose up -d postgres
+```
+
+## 4. Start the Server
 
 ```bash
 npm run dev
@@ -28,153 +45,74 @@ npm run dev
 
 You should see:
 ```
-✅ Registered tools: greet, button, counter, parseAdRequirements
-🚀 FeedMob AdPilot MCP Server started
-📍 MCP endpoint: http://localhost:8080/mcp
+✅ Database connected
+✅ Database migrations complete
+✅ Registered tools: parseAdRequirements, conductAdResearch, generateAdCopy, generateAdImages, generateMixedMediaCreative, getCampaign
+🚀 FeedMob AdPilot MCP Server started on http://0.0.0.0:8080/mcp
+✅ Health check endpoint available at http://0.0.0.0:8080/health
 ```
 
-## Test the Tool
-
-### Option 1: MCP Inspector (Recommended)
+## 5. Test with MCP Inspector
 
 ```bash
 npm run mcp:inspect
 ```
 
-This opens a visual interface where you can:
-1. Select the `parseAdRequirements` tool
-2. Enter a campaign description
-3. See the interactive UI response
+This opens a visual interface to test tools interactively.
 
-### Option 2: Command Line
+## Example: Parse Campaign Requirements
 
-```bash
-# In another terminal
-curl -X POST http://localhost:8080/mcp \
-  -H "Content-Type: application/json" \
-  -d '{
-    "jsonrpc": "2.0",
-    "method": "tools/call",
-    "params": {
-      "name": "parseAdRequirements",
-      "arguments": {
-        "requestText": "Create a TikTok video ad for my fitness app targeting Southeast Asian women aged 25-35 with a $5,000 budget."
-      }
-    },
-    "id": 1
-  }'
+1. Select `parseAdRequirements` tool
+2. Enter:
+```json
+{
+  "requestText": "Create a TikTok video ad for my fitness app targeting Southeast Asian women aged 25-35 with a $5,000 budget."
+}
 ```
+3. View the interactive UI showing extracted parameters
 
-## Example Inputs
+## Example: Full Workflow
 
-### Complete Campaign
 ```
-"Launch a Facebook carousel ad campaign for our organic coffee brand targeting coffee enthusiasts aged 30-50 in the United States. Budget is $10,000 for Q1 2024. Goal is to drive website traffic and increase brand awareness. Creative should be warm and inviting with earth tones."
+1. parseAdRequirements → Extract campaign parameters
+2. conductAdResearch → Generate research report
+3. generateAdCopy → Create ad copy variations
+4. generateAdImages → Generate image options
+5. generateMixedMediaCreative → Combine for final creative
 ```
-
-### Minimal Campaign (will show missing fields)
-```
-"I need ads for my new mobile game"
-```
-
-### Specific Platform Campaign
-```
-"Instagram story ads for our fashion boutique, targeting women 18-35 in New York City, $3000 budget, launching next month"
-```
-
-## Expected Output
-
-The tool returns an interactive mcp-ui component showing:
-
-- ✅ **Extracted Parameters**: All 12 campaign fields in card layout
-- 🟠 **Missing Fields**: Highlighted in orange with "Not specified"
-- ✓ **Confirmation Button**: Appears when all fields are complete
-- 🎨 **Responsive Design**: Adapts to light/dark mode
 
 ## Troubleshooting
 
-### "Failed to load skill instructions"
-
-Make sure the `skills/parse-ad-requirements.md` file exists:
+### Database Connection Failed
 ```bash
-ls skills/parse-ad-requirements.md
+# Ensure PostgreSQL is running
+docker-compose ps
+docker-compose up -d postgres
 ```
 
-### TypeScript Errors
-
-Run typecheck:
-```bash
-npm run typecheck
-```
+### AWS Bedrock Errors
+- Verify AWS credentials in `.env`
+- Ensure Bedrock access is enabled in your AWS account
+- Check the model ID is correct for your region
 
 ### Tests Failing
-
-Run tests with verbose output:
 ```bash
 npm test -- --reporter=verbose
 ```
 
-## Next Steps
-
-1. **Integrate with your MCP client** (Claude Desktop, etc.)
-2. **Customize the skill** (`skills/parse-ad-requirements.md`)
-3. **Add more tools** (ad copy generation, image generation)
-4. **Store results** (add database integration)
-
 ## Development Commands
 
 ```bash
-# Development with hot reload
-npm run dev
-
-# Build for production
-npm run build
-
-# Run production build
-npm start
-
-# Run tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Type checking
-npm run typecheck
-
-# Visual debugging
-npm run mcp:inspect
+npm run dev          # Development with hot reload
+npm run build        # Build for production
+npm start            # Run production build
+npm test             # Run all tests
+npm run typecheck    # TypeScript checking
+npm run mcp:inspect  # Visual MCP debugging
 ```
 
-## Architecture Overview
+## Next Steps
 
-```
-User Input (Natural Language)
-    ↓
-parseAdRequirements Tool
-    ↓
-AdRequirementsAgent (Claude Agent SDK)
-    ↓
-parse-ad-requirements Skill
-    ↓
-ValidationResult (Zod Schema)
-    ↓
-createParametersUI (mcp-ui)
-    ↓
-Interactive UI Component
-```
-
-## Support
-
-- Check the [README.md](README.md) for detailed documentation
-- Review [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) for technical details
-- See `.kiro/specs/parse-ad-requirements/` for the complete specification
-
-## Tips
-
-1. **Be specific**: More details in the input = fewer missing fields
-2. **Use natural language**: The tool understands conversational descriptions
-3. **Iterate**: Start simple, then add details based on missing field prompts
-4. **Test variations**: Try different platforms, budgets, and audiences
-
-Happy building! 🚀
+- See [README.md](README.md) for full documentation
+- See [DEPLOYMENT.md](DEPLOYMENT.md) for Docker/Coolify deployment
+- See [client-ui/README.md](client-ui/README.md) for the chat interface

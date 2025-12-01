@@ -1,38 +1,34 @@
 # FeedMob AdPilot MCP Server
 
-A Model Context Protocol (MCP) server that provides AI-powered advertising campaign tools using FastMCP and mcp-ui.
+AI-powered advertising campaign planning and creative generation system built with FastMCP, Claude Agent SDK, and mcp-ui.
 
 ## Features
 
-### Parse Advertising Requirements
+### 🎯 Parse Advertising Requirements
+Extract structured campaign parameters from natural language descriptions.
 
-The `parseAdRequirements` tool extracts structured campaign parameters from natural language descriptions using the Claude Agent SDK.
+### 🔍 Conduct Ad Research
+Generate comprehensive campaign reports with market insights, audience analysis, and platform strategies.
 
-**Example input:**
-```
-"Create a TikTok video ad for my fitness app targeting Southeast Asian women aged 25-35 with a $5,000 budget."
-```
+### ✍️ Generate Ad Copy
+Create two distinct ad copy variations optimized for your target platform and audience.
 
-**Extracted parameters:**
-- Product/Service
-- Target Audience
-- Geography
-- Ad Format
-- Budget
-- Platform
-- KPIs
-- Time Period
-- Creative Direction
-- And more...
+### 🖼️ Generate Ad Images
+Generate image variations for campaigns with interactive selection.
 
-The tool displays results in an interactive mcp-ui interface with visual distinction for missing fields.
+### 🎨 Generate Mixed Media
+Combine selected images with ad copy for complete creative assets.
 
-## Setup
+### 📊 Campaign Management
+Store and retrieve campaign data with PostgreSQL persistence.
+
+## Quick Start
 
 ### Prerequisites
 
 - Node.js 20+
-- npm
+- Docker (for PostgreSQL)
+- AWS Account with Bedrock access (for Claude Agent SDK)
 
 ### Installation
 
@@ -42,31 +38,20 @@ npm install
 
 ### Configuration
 
-Create a `.env` file based on `.env.example`:
-
 ```bash
 cp .env.example .env
 ```
 
-#### Option 1: Anthropic API (Default)
+Configure your `.env` file with:
+- AWS credentials for Bedrock
+- PostgreSQL connection (or use Docker)
+- Optional: Tavily API key for enhanced research
 
-```env
-# Add any required API keys here
+### Start Database
+
+```bash
+docker-compose up -d postgres
 ```
-
-Get your API key from [Anthropic Console](https://console.anthropic.com/).
-
-#### Option 2: AWS Bedrock
-
-```env
-CLAUDE_CODE_USE_BEDROCK=1
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-ANTHROPIC_MODEL=us.anthropic.claude-sonnet-4-20250514-v1:0
-```
-
-## Development
 
 ### Run Development Server
 
@@ -74,7 +59,7 @@ ANTHROPIC_MODEL=us.anthropic.claude-sonnet-4-20250514-v1:0
 npm run dev
 ```
 
-The server will start on `http://localhost:8080/mcp` (binds to `0.0.0.0` so you can reach it from containers or remote hosts). To bind to a different interface, set `FASTMCP_HOST`, e.g. `FASTMCP_HOST=127.0.0.1 npm run dev`.
+Server starts at `http://localhost:8080/mcp`
 
 ### Test with MCP Inspector
 
@@ -82,104 +67,70 @@ The server will start on `http://localhost:8080/mcp` (binds to `0.0.0.0` so you 
 npm run mcp:inspect
 ```
 
-This opens a visual debugging interface where you can test tools interactively.
+## Available Tools
 
-### Run Tests
-
-```bash
-# Run all tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run with coverage
-npm run test:coverage
-```
-
-### Type Checking
-
-```bash
-npm run typecheck
-```
+| Tool | Description |
+|------|-------------|
+| `parseAdRequirements` | Parse natural language campaign requirements |
+| `conductAdResearch` | Generate comprehensive campaign research reports |
+| `generateAdCopy` | Create ad copy variations |
+| `generateAdImages` | Generate image variations |
+| `generateMixedMediaCreative` | Combine images and copy |
+| `getCampaign` | Retrieve stored campaign data |
 
 ## Project Structure
 
 ```
-.
 ├── src/
-│   ├── index.ts                    # FastMCP server entry point
-│   ├── schemas/
-│   │   └── campaign-params.ts      # Zod schemas for validation
-│   ├── services/
-│   │   └── ad-requirements-agent.ts # Claude Agent SDK integration
-│   ├── tools/
-│   │   ├── parse-ad-requirements.ts # Parse campaign requirements
-│   │   ├── conduct-ad-research.ts   # Research competitors & trends
-│   │   ├── generate-ad-copy.ts      # Generate ad copy variations
-│   │   ├── generate-ad-images.ts    # Generate ad images
-│   │   └── generate-mixed-media.ts  # Generate mixed media creatives
-│   └── utils/
-│       ├── ad-requirements-ui.ts   # Campaign parameters UI
-│       ├── ad-research-ui.ts       # Research results UI
-│       ├── ad-copy-ui.ts           # Ad copy UI
-│       ├── ad-images-ui.ts         # Ad images UI
-│       └── mixed-media-ui.ts       # Mixed media UI
-├── skills/
-│   └── parse-ad-requirements.md    # Agent skill instructions
-├── tests/
-│   ├── unit/                       # Unit tests
-│   └── properties/                 # Property-based tests
-└── .kiro/specs/                    # Feature specifications
-    └── parse-ad-requirements/
-        ├── requirements.md
-        ├── design.md
-        └── tasks.md
+│   ├── index.ts              # FastMCP server entry
+│   ├── tools/                # MCP tool definitions
+│   ├── services/             # Agent services (Claude SDK)
+│   ├── utils/                # UI factories (mcp-ui)
+│   ├── schemas/              # Zod validation schemas
+│   └── plugins/              # Claude Agent skills
+├── client-ui/                # Next.js chat interface
+├── tests/                    # Unit and property tests
+├── docs/                     # Documentation
+└── .kiro/specs/              # Feature specifications
 ```
 
-## Available Tools
+## Endpoints
 
-### parseAdRequirements
+- **MCP**: `http://localhost:8080/mcp`
+- **SSE**: `http://localhost:8080/sse`
+- **Health**: `http://localhost:8080/health`
 
-Parse natural language advertising campaign requirements into structured parameters.
+## Development
 
-**Parameters:**
-- `requestText` (string, required): Natural language campaign description
+```bash
+npm run dev          # Start with hot reload
+npm run build        # Build for production
+npm start            # Run production build
+npm test             # Run tests
+npm run typecheck    # Type checking
+npm run mcp:inspect  # Visual debugging
+```
 
-**Returns:**
-- Interactive mcp-ui component displaying extracted parameters
-- Visual indicators for missing fields
-- Confirmation button when all fields are complete
+## Docker Deployment
 
-## MCP Endpoints
+See [DEPLOYMENT.md](DEPLOYMENT.md) for Coolify/Docker deployment instructions.
 
-- **MCP Endpoint**: `http://localhost:8080/mcp`
-- **SSE Endpoint**: `http://localhost:8080/sse`
-- **Health Check**: `http://localhost:8080/ready`
+Pre-built images available at:
+- `ghcr.io/feedmob/feedmob_adpilot_mcp:latest`
+- `ghcr.io/feedmob/feedmob_adpilot_mcp-ui:latest`
 
 ## Technology Stack
 
-- **FastMCP** (^3.23.1) - MCP server framework
-- **@mcp-ui/server** (^5.13.1) - Interactive UI components
-- **@anthropic-ai/claude-agent-sdk** (^0.1.54) - Claude Agent integration
-- **Zod** (^3.22.0) - Runtime type validation
-- **TypeScript** (^5.3.0) - Type-safe development
-- **Vitest** (^1.2.0) - Testing framework
-- **fast-check** (^3.15.0) - Property-based testing
+- **FastMCP** - MCP server framework
+- **@mcp-ui/server** - Interactive UI components
+- **@anthropic-ai/claude-agent-sdk** - Claude Agent integration
+- **Zod** - Runtime type validation
+- **PostgreSQL** - Campaign data persistence
+- **Vitest + fast-check** - Testing
 
-## Testing
+## Client UI
 
-The project includes comprehensive test coverage:
-
-- **Unit Tests**: Test individual components and functions
-- **Property-Based Tests**: Verify correctness properties across generated inputs
-  - Schema round-trip validation
-  - Input validation enforcement
-  - UIResource structure compliance
-  - Visual distinction for missing fields
-  - Confirmation button presence logic
-
-All tests run with 100+ iterations to ensure robustness.
+The `client-ui/` directory contains a Next.js chat interface that connects to this MCP server. See [client-ui/README.md](client-ui/README.md) for details.
 
 ## License
 
