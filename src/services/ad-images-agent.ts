@@ -87,6 +87,11 @@ Follow the skill workflow to generate both variations using the Python script, t
       console.log('Response preview:', responseText.substring(0, 1000));
       console.log('=== End Debug ===');
 
+      const agentErrors = Array.isArray((resultMessage as any)?.errors)
+        ? (resultMessage as any).errors as string[]
+        : [];
+      const latestAssistant = assistantSnippets[assistantSnippets.length - 1] || '';
+
       // Extract JSON from the response - try multiple patterns
       let jsonMatch = responseText.match(/```json\s*([\s\S]*?)```/);
       if (jsonMatch) {
@@ -96,7 +101,20 @@ Follow the skill workflow to generate both variations using the Python script, t
       }
       
       if (!jsonMatch) {
-        throw new Error(`No JSON found in agent response. Response preview: ${responseText.substring(0, 500)}`);
+        const errorSignals: string[] = [];
+        if (agentErrors.length) {
+          errorSignals.push(`Agent errors: ${agentErrors.join('; ')}`);
+        }
+        if (latestAssistant) {
+          errorSignals.push(`Assistant said: ${latestAssistant.substring(0, 500)}`);
+        } else {
+          errorSignals.push(`Response preview: ${responseText.substring(0, 500)}`);
+        }
+        if (/bash tool|system environment issue|python script/gi.test(responseText)) {
+          errorSignals.push('The agent could not execute the image script (Bash/Python unavailable in runtime).');
+        }
+        
+        throw new Error(`Agent did not return JSON for ad images. ${errorSignals.join(' ')}`.trim());
       }
 
       const parsedResult = JSON.parse(jsonMatch[0]);

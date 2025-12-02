@@ -38,8 +38,9 @@ FROM node:20-alpine AS runner
 
 WORKDIR /app
 
-# Install curl for health checks
-RUN apk add --no-cache curl
+# Install runtime tools needed by plugins (bash + python) and curl for health checks.
+# Python deps will be installed at runtime by the agent via the Bash tool.
+RUN apk add --no-cache bash python3 py3-pip curl
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
