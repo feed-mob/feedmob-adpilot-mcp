@@ -39,8 +39,11 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 # Install runtime tools needed by plugins (bash + python) and curl for health checks.
-# Python deps will be installed at runtime by the agent via the Bash tool.
 RUN apk add --no-cache bash python3 py3-pip curl
+
+# Copy and install Python dependencies for image generation plugin
+COPY src/plugins/generate-ad-images/skills/generate-ad-images/scripts/requirements.txt /tmp/requirements.txt
+RUN pip3 install --no-cache-dir --break-system-packages -r /tmp/requirements.txt && rm /tmp/requirements.txt
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
