@@ -13,8 +13,6 @@ services:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - adpilot-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-feedmob} -d ${POSTGRES_DB:-feedmob_adpilot}"]
       interval: 10s
@@ -44,8 +42,6 @@ services:
       IMAGEKIT_PUBLIC_KEY: ${IMAGEKIT_PUBLIC_KEY}
       IMAGEKIT_URL_ENDPOINT: ${IMAGEKIT_URL_ENDPOINT}
       NODE_ENV: production
-    networks:
-      - adpilot-network
     depends_on:
       postgres:
         condition: service_healthy
@@ -69,8 +65,6 @@ services:
       AWS_REGION: ${AWS_REGION:-us-east-1}
       BEDROCK_MODEL_ID: ${BEDROCK_MODEL_ID:-us.anthropic.claude-haiku-4-5-20251001-v1:0}
       NODE_ENV: production
-    networks:
-      - adpilot-network
     depends_on:
       mcp-server:
         condition: service_healthy
@@ -80,10 +74,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-
-networks:
-  adpilot-network:
-    driver: bridge
 
 volumes:
   postgres_data:

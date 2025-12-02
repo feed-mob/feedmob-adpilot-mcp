@@ -13,8 +13,6 @@ services:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - adpilot-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-feedmob} -d ${POSTGRES_DB:-feedmob_adpilot}"]
       interval: 10s
@@ -53,8 +51,6 @@ services:
       
       # Node Environment
       NODE_ENV: production
-    networks:
-      - adpilot-network
     depends_on:
       postgres:
         condition: service_healthy
@@ -81,8 +77,6 @@ services:
       
       # Node Environment
       NODE_ENV: production
-    networks:
-      - adpilot-network
     depends_on:
       mcp-server:
         condition: service_healthy
@@ -92,10 +86,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-
-networks:
-  adpilot-network:
-    driver: bridge
 
 volumes:
   postgres_data:
