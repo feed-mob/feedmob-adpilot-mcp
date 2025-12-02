@@ -1,11 +1,13 @@
 import { Client } from '@modelcontextprotocol/sdk/client';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { Agent } from 'undici';
 import type { ToolDefinition, ToolResult, UIResource } from '../types';
 import { getEnv } from '../env';
 
 export class MCPClientService {
   private client: Client | null = null;
   private transport: StreamableHTTPClientTransport | null = null;
+  private agent: Agent | null = null;
   private tools: ToolDefinition[] = [];
   private connectionError: string | null = null;
   private serverUrl: string = '';
@@ -32,13 +34,29 @@ export class MCPClientService {
 
     try {
       const endpoint = new URL(targetUrl);
+      this.agent = new Agent({ headersTimeout: 15 * 60 * 1000 });
 
       // Create MCP client using the official SDK over Streamable HTTP transport
       this.client = new Client({
         name: 'mcp-ui-chat-client',
         version: '1.0.0',
       });
-      this.transport = new StreamableHTTPClientTransport(endpoint);
+      this.transport = new StreamableHTTPClientTransport(
+        endpoint,
+        this.agent
+          ? {
+              fetch: (url, init) =>
+                fetch(
+                  url,
+                  {
+                    ...init,
+                    // Extend RequestInit with Undici dispatcher to bump headers timeout
+                    dispatcher: this.agent,
+                  } as any
+                ),
+            }
+          : undefined
+      );
 
       // Connect to server
       await this.client.connect(this.transport);
@@ -51,6 +69,14 @@ export class MCPClientService {
     } catch (error: any) {
       this.client = null;
       this.transport = null;
+      if (this.agent) {
+        try {
+          await this.agent.close();
+        } catch (agentError) {
+          console.error('Error closing MCP agent after failed connect:', agentError);
+        }
+        this.agent = null;
+      }
       this.tools = [];
       this.connectionError = `Failed to connect to MCP server: ${error.message}`;
       console.error('❌', this.connectionError);
@@ -80,6 +106,15 @@ export class MCPClientService {
         console.error('Error closing MCP transport:', error);
       }
       this.transport = null;
+    }
+
+    if (this.agent) {
+      try {
+        await this.agent.close();
+      } catch (error) {
+        console.error('Error closing MCP agent:', error);
+      }
+      this.agent = null;
     }
 
     this.tools = [];
@@ -151,6 +186,7 @@ export class MCPClientService {
         undefined,
         {
           timeout: timeoutMs,
+          resetTimeoutOnProgress: true,
         }
       );
 
